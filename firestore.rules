@@ -1,0 +1,181 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Firestore Security Rules — Prof. Mohammed Dauda Portfolio
+//
+// Enforcement model:
+//   - Public (read-only) collections are readable by anyone.
+//   - All write operations require an authenticated admin user whose UID
+//     exists in the `adminUsers` collection with active == true.
+//   - Role checks:
+//       superadmin  → full write access including user management
+//       editor      → create / update / delete content collections
+//       readonly    → read-only admin (no writes, same as public)
+//   - Contact messages are write-once from the public; only admins may read.
+//   - Admin user records may only be created or modified by superadmins.
+//   - Privilege escalation is prevented: a non-superadmin cannot write the
+//     'superadmin' role into any adminUsers document.
+// ─────────────────────────────────────────────────────────────────────────────
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──────────────────────────────────────────────────
+
+    // Is the request from any authenticated user?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Does the caller have an active admin record?
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.active == true;
+    }
+
+    // Is the caller a superadmin?
+    function isSuperAdmin() {
+      return isAdmin()
+        && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == 'superadmin';
+    }
+
+    // Is the caller a superadmin or editor?
+    function canEdit() {
+      let role = get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role;
+      return isAdmin() && (role == 'superadmin' || role == 'editor');
+    }
+
+    // ── Public read-only collections ──────────────────────────────────────
+
+    match /siteProfile/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /siteSettings/{docId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    match /timeline/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /expertise/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /publications/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /patents/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /awards/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /research/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /projects/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /galleryAlbums/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /galleryImages/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /activities/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /news/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    match /mentorshipPrograms/{docId} {
+      allow read: if true;
+      allow write: if canEdit();
+    }
+
+    // ── Contact messages ──────────────────────────────────────────────────
+    // Public: create only (no read, no update, no delete)
+    // Admins: full read + delete; update status only
+
+    match /contactMessages/{docId} {
+      // Anyone may create a new message (contact form submission)
+      allow create: if
+        request.resource.data.keys().hasAll(['name', 'email', 'subject', 'message'])
+        && request.resource.data.name   is string && request.resource.data.name.size()    >= 2
+        && request.resource.data.email  is string && request.resource.data.email.size()   >= 5
+        && request.resource.data.subject is string && request.resource.data.subject.size() >= 4
+        && request.resource.data.message is string && request.resource.data.message.size() >= 20
+        // Prevent forged read/status flags
+        && request.resource.data.read   == false
+        && request.resource.data.status == 'new';
+
+      // Admins may read and delete
+      allow read, delete: if isAdmin();
+
+      // Admins may update status only (not escalate read to write on content)
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['read', 'status', 'updatedAt']);
+    }
+
+    // ── Admin users ───────────────────────────────────────────────────────
+    // Only superadmins may manage these. Privilege escalation is prevented.
+
+    match /adminUsers/{uid} {
+      allow read: if isSuperAdmin();
+
+      allow create: if isSuperAdmin()
+        // Prevent granting superadmin by a non-superadmin (belt-and-suspenders)
+        && (request.resource.data.role != 'superadmin' || isSuperAdmin());
+
+      allow update: if isSuperAdmin()
+        // Prevent self-demotion from superadmin
+        && !(uid == request.auth.uid && request.resource.data.role != 'superadmin')
+        // Prevent privilege escalation
+        && (request.resource.data.role != 'superadmin' || isSuperAdmin());
+
+      // A superadmin may not delete their own account record
+      allow delete: if isSuperAdmin() && uid != request.auth.uid;
+    }
+
+    // ── Audit logs ────────────────────────────────────────────────────────
+    // Admins may create logs; only superadmins may read them.
+    // Nobody may update or delete audit log entries.
+
+    match /auditLogs/{docId} {
+      allow create: if isAdmin();
+      allow read:   if isSuperAdmin();
+      allow update, delete: if false;
+    }
+
+    // ── Deny everything else ──────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

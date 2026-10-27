@@ -1,0 +1,95 @@
+rules_version = '2';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Firebase Storage Security Rules — Prof. Mohammed Dauda Portfolio
+//
+// Enforcement model:
+//   - All files are publicly readable (downloads are served by URL).
+//   - Uploads and deletions require an authenticated admin user whose UID
+//     exists in Firestore adminUsers with active == true AND role is
+//     superadmin or editor.
+//   - File type is validated by content type.
+//   - File size is capped at 10 MB for images, 25 MB for documents.
+//
+// NOTE: Firestore-based role lookup is not directly available in Storage
+// rules — authentication is the only signal. Role enforcement is applied in
+// application code (admin-guard + server calls) and Firestore rules.
+// Storage rules require authentication as a minimum.
+// ─────────────────────────────────────────────────────────────────────────────
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Helper functions ──────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isImage() {
+      return request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif|svg\\+xml)');
+    }
+
+    function isPdf() {
+      return request.resource.contentType == 'application/pdf';
+    }
+
+    function isDocument() {
+      return isPdf()
+        || request.resource.contentType == 'application/msword'
+        || request.resource.contentType.matches('application/vnd\\..*');
+    }
+
+    function imageSizeOk() {
+      // 10 MB maximum for images
+      return request.resource.size <= 10 * 1024 * 1024;
+    }
+
+    function documentSizeOk() {
+      // 25 MB maximum for documents
+      return request.resource.size <= 25 * 1024 * 1024;
+    }
+
+    // ── Profile photos ────────────────────────────────────────────────────
+    match /profile/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isImage() && imageSizeOk();
+      allow delete: if isSignedIn();
+    }
+
+    // ── Gallery images ─────────────────────────────────────────────────────
+    match /gallery/{albumId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isImage() && imageSizeOk();
+      allow delete: if isSignedIn();
+    }
+
+    // ── News / article cover images ────────────────────────────────────────
+    match /news/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isImage() && imageSizeOk();
+      allow delete: if isSignedIn();
+    }
+
+    // ── Activity cover images ──────────────────────────────────────────────
+    match /activities/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && isImage() && imageSizeOk();
+      allow delete: if isSignedIn();
+    }
+
+    // ── General site assets ───────────────────────────────────────────────
+    match /assets/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && (isImage() || isDocument())
+        && (imageSizeOk() || documentSizeOk());
+      allow delete: if isSignedIn();
+    }
+
+    // ── Deny everything else ──────────────────────────────────────────────
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

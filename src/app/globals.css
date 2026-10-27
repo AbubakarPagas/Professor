@@ -1,0 +1,145 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design tokens ─────────────────────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Backgrounds */
+    --background:    40 27% 96%;          /* ivory #F7F5F0 */
+    --foreground:    218 20% 18%;         /* charcoal #242B36 */
+
+    /* Card */
+    --card:          0 0% 100%;
+    --card-foreground: 218 20% 18%;
+
+    /* Popover */
+    --popover:       0 0% 100%;
+    --popover-foreground: 218 20% 18%;
+
+    /* Primary — deep navy */
+    --primary:       220 51% 13%;         /* #101C32 */
+    --primary-foreground: 40 27% 96%;
+
+    /* Secondary — warm ivory (interactive) */
+    --secondary:     40 20% 93%;
+    --secondary-foreground: 220 51% 13%;
+
+    /* Muted */
+    --muted:         40 18% 90%;
+    --muted-foreground: 220 12% 46%;
+
+    /* Accent — muted gold */
+    --accent:        38 48% 56%;          /* #C5A15A */
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive:   0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders & inputs */
+    --border:        40 15% 86%;
+    --input:         40 15% 86%;
+    --ring:          220 51% 13%;
+
+    /* Border radius */
+    --radius:        0.5rem;
+  }
+}
+
+/* ─── Base styles ───────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { @apply border-border; }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-ivory-100 text-charcoal font-sans leading-relaxed;
+  }
+
+  h1, h2, h3 { @apply font-serif; }
+  h4, h5, h6 { @apply font-sans; }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: #C5A15A33;
+    color: #101C32;
+  }
+}
+
+/* ─── Component utilities ───────────────────────────────────────────────── */
+@layer utilities {
+  .section { @apply py-section; }
+  .section-sm { @apply py-section-sm; }
+
+  /* Section header pattern */
+  .section-label {
+    @apply inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-gold-500 mb-4;
+  }
+  .section-label::before {
+    content: '';
+    @apply block h-px w-6 bg-gold-400 flex-shrink-0;
+  }
+  .section-title {
+    @apply font-serif text-display-md text-navy-800 leading-tight;
+  }
+  .section-divider {
+    @apply mt-5 h-[2px] w-10 bg-gradient-to-r from-gold-400 to-gold-200 rounded-full;
+  }
+  .gold-rule {
+    @apply h-[2px] w-10 bg-gradient-to-r from-gold-400 to-gold-200 rounded-full;
+  }
+
+  /* Card base */
+  .card-base {
+    @apply bg-white border border-ivory-200 rounded-xl shadow-card transition-all duration-300;
+  }
+  .card-base:hover {
+    @apply shadow-card-hover border-gold-200;
+  }
+
+  /* Body link */
+  .body-link {
+    @apply text-navy-700 underline decoration-gold-300/60 underline-offset-2 hover:text-gold-600 hover:decoration-gold-400 transition-colors;
+  }
+
+  /* Badge pill */
+  .pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  /* Prose overrides */
+  .prose-brand {
+    @apply prose prose-slate max-w-none;
+  }
+  .prose-brand h1,
+  .prose-brand h2,
+  .prose-brand h3 {
+    @apply font-serif text-navy-800;
+  }
+  .prose-brand a { @apply text-gold-600 no-underline hover:underline; }
+  .prose-brand strong { @apply text-navy-800; }
+
+  /* Noise texture overlay */
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* Gradient text */
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-gold-300 via-gold-400 to-gold-500 bg-clip-text text-transparent;
+  }
+}
+
+/* ─── Print ─────────────────────────────────────────────────────────────── */
+@media print {
+  nav, footer, [data-noprint] { display: none !important; }
+}
