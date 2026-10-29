@@ -4,15 +4,26 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getGalleryAlbumBySlug, getGalleryImages } from '@/lib/firestore'
+import {
+  serverGetGalleryAlbumBySlug,
+  serverGetGalleryAlbumSlugs,
+  serverGetGalleryImages,
+} from '@/lib/firestore-server'
 import { formatDate } from '@/lib/utils'
 import { AlbumLightbox } from './album-lightbox'
 
 interface Props { params: Promise<{ slug: string }> }
 
+export async function generateStaticParams() {
+  const slugs = await serverGetGalleryAlbumSlugs()
+  return slugs.map(slug => ({ slug }))
+}
+
+export const dynamicParams = true  // allow slugs not pre-rendered to render on demand
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const album = await getGalleryAlbumBySlug(slug)
+  const album = await serverGetGalleryAlbumBySlug(slug)
   if (!album) return { title: 'Album Not Found' }
   return {
     title: album.title,
@@ -27,10 +38,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AlbumPage({ params }: Props) {
   const { slug } = await params
-  const album = await getGalleryAlbumBySlug(slug)
+  const album = await serverGetGalleryAlbumBySlug(slug)
   if (!album || !album.published) notFound()
 
-  const images = await getGalleryImages(album.id)
+  const images = await serverGetGalleryImages(album.id)
 
   return (
     <div className="min-h-screen bg-ivory-100">

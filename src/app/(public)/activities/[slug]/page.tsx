@@ -5,7 +5,10 @@ import Link from 'next/link'
 import { ArrowLeft, Calendar, MapPin, Building2, Users, ExternalLink, Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { getActivityBySlug, getActivities } from '@/lib/firestore'
+import {
+  serverGetActivityBySlug,
+  serverGetActivitySlugs,
+} from '@/lib/firestore-server'
 import { formatDate } from '@/lib/utils'
 import type { ActivityCategory } from '@/types'
 
@@ -18,9 +21,16 @@ const CAT_LABEL: Record<ActivityCategory, string> = {
 
 interface Props { params: Promise<{ slug: string }> }
 
+export async function generateStaticParams() {
+  const slugs = await serverGetActivitySlugs()
+  return slugs.map(slug => ({ slug }))
+}
+
+export const dynamicParams = true
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const activity = await getActivityBySlug(slug)
+  const activity = await serverGetActivityBySlug(slug)
   if (!activity) return { title: 'Activity Not Found' }
   return {
     title: activity.seoTitle ?? activity.title,
@@ -35,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ActivityDetailPage({ params }: Props) {
   const { slug } = await params
-  const activity = await getActivityBySlug(slug)
+  const activity = await serverGetActivityBySlug(slug)
   if (!activity || activity.status !== 'published') notFound()
 
   return (
@@ -148,7 +158,7 @@ export default async function ActivityDetailPage({ params }: Props) {
             )}
 
             {/* People / organisations */}
-            {(activity.relatedPeople?.length || activity.relatedOrgs?.length) && (
+            {(activity.relatedPeople?.length || activity.relatedOrgs?.length) ? (
               <div className="card-base p-5">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-charcoal/50 mb-3 flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" aria-hidden="true" /> Related
@@ -160,7 +170,7 @@ export default async function ActivityDetailPage({ params }: Props) {
                   <p key={o} className="text-sm text-charcoal/55 mb-0.5 italic">{o}</p>
                 ))}
               </div>
-            )}
+            ) : null}
 
             {/* External links */}
             {activity.externalLinks && activity.externalLinks.length > 0 && (

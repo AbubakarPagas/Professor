@@ -14,9 +14,9 @@ const firebaseConfig = {
 }
 
 // Prevent duplicate initialisation in Next.js hot-reload.
-// NOTE: This module must only be imported in client-side code (components,
-// hooks, client actions). Server components and route handlers that need
-// Firestore data should use the REST API directly — see src/app/sitemap.ts.
+// This file must ONLY be imported inside 'use client' components, hooks,
+// and client-side service files (auth-context, storage, firestore).
+// Server components and build-time code must use src/lib/firestore-server.ts.
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 
 export const auth    = getAuth(app)

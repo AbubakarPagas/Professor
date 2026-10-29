@@ -5,14 +5,24 @@ import Link from 'next/link'
 import { ArrowLeft, Calendar, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getNewsItemBySlug } from '@/lib/firestore'
+import {
+  serverGetNewsItemBySlug,
+  serverGetNewsSlugs,
+} from '@/lib/firestore-server'
 import { formatDate } from '@/lib/utils'
 
 interface Props { params: Promise<{ slug: string }> }
 
+export async function generateStaticParams() {
+  const slugs = await serverGetNewsSlugs()
+  return slugs.map(slug => ({ slug }))
+}
+
+export const dynamicParams = true
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const item = await getNewsItemBySlug(slug)
+  const item = await serverGetNewsItemBySlug(slug)
   if (!item) return { title: 'Article Not Found' }
   return {
     title: item.title,
@@ -27,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewsArticlePage({ params }: Props) {
   const { slug } = await params
-  const article = await getNewsItemBySlug(slug)
+  const article = await serverGetNewsItemBySlug(slug)
   if (!article || !article.published) notFound()
 
   return (
