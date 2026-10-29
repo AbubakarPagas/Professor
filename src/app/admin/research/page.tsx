@@ -11,36 +11,50 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DataTable } from '@/components/admin/data-table'
-import { getResearchProjects, createResearchProject, updateResearchProject, deleteResearchProject } from '@/lib/firestore'
+import {
+  getResearchProjects, createResearchProject, updateResearchProject, deleteResearchProject,
+  createAuditLog,
+} from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { ResearchProject, ResearchStatus } from '@/types'
+
+const STATUS_COLOUR: Record<ResearchStatus, string> = {
+  ongoing:   'bg-emerald-100 text-emerald-700',
+  completed: 'bg-blue-100 text-blue-700',
+  planned:   'bg-amber-100 text-amber-700',
+}
 
 const schema = z.object({
   title: z.string().min(3),
   description: z.string().min(10),
   fundingBody: z.string().optional(),
   fundingAmount: z.string().optional(),
-  startYear: z.coerce.number().int().min(1900).max(2100),
-  endYear: z.coerce.number().int().min(1900).max(2100).optional().or(z.literal(0)).transform(v => v || undefined),
+  startYear: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
+  endYear: z.coerce.number().int().min(1900).max(2100).optional()
+    .or(z.literal(0)).transform(v => v || undefined),
   status: z.enum(['ongoing', 'completed', 'planned']),
   collaborators: z.string().optional(),
   keywords: z.string().min(1),
   outcomes: z.string().optional(),
+  imageUrl: z.string().url().optional().or(z.literal('')),
+  featured: z.boolean().default(false),
 })
 
-type FormData = z.infer<typeof schema> & { collaboratorsRaw?: string }
+type FormData = z.infer<typeof schema>
 
 export default function AdminResearchPage() {
   const { data, loading, reload } = useFirestoreData(getResearchProjects)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<ResearchProject | null>(null)
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting } } =
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } =
     useForm<FormData>({ resolver: zodResolver(schema) })
 
   const openAdd = () => {
-    reset({ status: 'ongoing', startYear: new Date().getFullYear(), keywords: '' })
+    reset({ status: 'ongoing', startYear: new Date().getFullYear(), keywords: '', featured: false })
     setEditing(null)
     setDialogOpen(true)
   }
@@ -48,26 +62,53 @@ export default function AdminResearchPage() {
   const openEdit = (r: ResearchProject) => {
     reset({
       ...r,
+      startYear: r.startYear ?? new Date().getFullYear(),
+      status: r.status ?? 'ongoing',
       keywords: r.keywords.join(', '),
       collaborators: r.collaborators?.join(', ') ?? '',
+      endYear: r.endYear ?? 0,
+      imageUrl: r.imageUrl ?? '',
     })
     setEditing(r)
     setDialogOpen(true)
   }
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (form: FormData) => {
     const payload = {
-      ...data,
-      keywords: data.keywords.split(',').map(k => k.trim()).filter(Boolean),
-      collaborators: data.collaborators
-        ? data.collaborators.split(',').map(c => c.trim()).filter(Boolean)
+      ...form,
+      keywords: form.keywords.split(',').map(k => k.trim()).filter(Boolean),
+      collaborators: form.collaborators
+        ? form.collaborators.split(',').map(c => c.trim()).filter(Boolean)
         : [],
     }
     try {
-      editing
-        ? await updateResearchProject(editing.id, payload)
-        : await createResearchProject(payload as Omit<ResearchProject, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Updated' : 'Added', variant: 'success' as never })
+      if (editing) {
+        await updateResearchProject(editing.id, payload)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'research',
+            documentId: editing.id,
+            documentTitle: form.title,
+          })
+        }
+        toast({ title: 'Updated', variant: 'success' as never })
+      } else {
+        const ref = await createResearchProject(payload as Omit<ResearchProject, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'research',
+            documentId: ref.id,
+            documentTitle: form.title,
+          })
+        }
+        toast({ title: 'Added', variant: 'success' as never })
+      }
       setDialogOpen(false)
       reload()
     } catch {
@@ -76,7 +117,18 @@ export default function AdminResearchPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(r => r.id === id)
     await deleteResearchProject(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'research',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }
@@ -93,27 +145,67 @@ export default function AdminResearchPage() {
         onDelete={handleDelete}
         searchKeys={['title']}
         columns={[
-          { key: 'title', header: 'Title', render: row => <p className="font-medium text-navy-700 max-w-sm truncate">{row.title}</p> },
-          { key: 'fundingBody', header: 'Funder', render: row => <span className="text-muted-foreground">{row.fundingBody ?? '—'}</span> },
-          { key: 'startYear', header: 'Years', render: row => <span>{row.startYear}{row.endYear ? `–${row.endYear}` : '–'}</span> },
-          { key: 'status', header: 'Status', render: row => <span className="capitalize text-muted-foreground">{row.status}</span> },
+          {
+            key: 'title',
+            header: 'Title',
+            render: row => <p className="font-medium text-navy-700 max-w-sm truncate">{row.title}</p>,
+          },
+          {
+            key: 'fundingBody',
+            header: 'Funder',
+            render: row => <span className="text-charcoal/60">{row.fundingBody ?? '—'}</span>,
+          },
+          {
+            key: 'startYear',
+            header: 'Years',
+            render: row => (
+              <span className="tabular-nums">
+                {row.startYear}{row.endYear ? `–${row.endYear}` : '–Present'}
+              </span>
+            ),
+            className: 'w-28',
+          },
+          {
+            key: 'status',
+            header: 'Status',
+            render: row => (
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${STATUS_COLOUR[row.status]}`}>
+                {row.status}
+              </span>
+            ),
+            className: 'w-28',
+          },
+          {
+            key: 'featured',
+            header: 'Featured',
+            render: row => (
+              <span className={row.featured ? 'text-gold-600 font-medium text-sm' : 'text-charcoal/40 text-sm'}>
+                {row.featured ? 'Yes' : 'No'}
+              </span>
+            ),
+            className: 'w-20',
+          },
         ]}
       />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif">{editing ? 'Edit Project' : 'Add Project'}</DialogTitle>
+            <DialogTitle className="font-serif">{editing ? 'Edit Research Project' : 'Add Research Project'}</DialogTitle>
           </DialogHeader>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label>Title *</Label>
               <Input {...register('title')} className="mt-1" />
+              {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
             </div>
+
             <div>
               <Label>Description *</Label>
               <Textarea rows={3} {...register('description')} className="mt-1" />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>Funding Body</Label>
@@ -121,9 +213,10 @@ export default function AdminResearchPage() {
               </div>
               <div>
                 <Label>Funding Amount</Label>
-                <Input {...register('fundingAmount')} className="mt-1" />
+                <Input {...register('fundingAmount')} className="mt-1" placeholder="e.g. ₦50,000,000" />
               </div>
             </div>
+
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label>Status *</Label>
@@ -145,21 +238,37 @@ export default function AdminResearchPage() {
                 <Input type="number" {...register('endYear')} className="mt-1" placeholder="If completed" />
               </div>
             </div>
+
             <div>
               <Label>Keywords * (comma-separated)</Label>
               <Input {...register('keywords')} placeholder="heat transfer, energy, ..." className="mt-1" />
             </div>
+
             <div>
               <Label>Collaborators (comma-separated)</Label>
               <Input {...register('collaborators')} className="mt-1" />
             </div>
+
             <div>
-              <Label>Outcomes</Label>
+              <Label>Outcomes / Impact</Label>
               <Textarea rows={2} {...register('outcomes')} className="mt-1" />
             </div>
+
+            <div>
+              <Label>Cover Image URL</Label>
+              <Input type="url" {...register('imageUrl')} className="mt-1" />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input id="res-feat" type="checkbox" {...register('featured')} className="h-4 w-4" />
+              <Label htmlFor="res-feat" className="cursor-pointer">Featured on homepage</Label>
+            </div>
+
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button type="submit" variant="navy" disabled={isSubmitting}>{isSubmitting ? 'Saving…' : 'Save'}</Button>
+              <Button type="submit" variant="navy" disabled={isSubmitting} aria-busy={isSubmitting}>
+                {isSubmitting ? 'Saving…' : 'Save Research Project'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

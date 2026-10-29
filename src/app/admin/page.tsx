@@ -113,6 +113,7 @@ export default function AdminDashboard() {
               />
               <StatCard label="Gallery Albums"  value={counts?.albums ?? 0}         href="/admin/gallery"      colour="text-sky-700" />
               <StatCard label="Photos"          value={counts?.images ?? 0}         href="/admin/gallery"      colour="text-sky-600" />
+              <StatCard label="Mentorship"      value={counts?.mentorship ?? 0}     href="/admin/mentorship"   colour="text-green-700" />
               <StatCard
                 label="Enquiries"
                 value={counts?.messages ?? 0}

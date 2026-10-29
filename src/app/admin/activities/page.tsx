@@ -12,8 +12,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/admin/data-table'
-import { getActivities, createActivity, updateActivity, deleteActivity } from '@/lib/firestore'
+import { getActivities, createActivity, updateActivity, deleteActivity, createAuditLog } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import { slugify, formatDate } from '@/lib/utils'
 import type { Activity, ActivityStatus, ActivityCategory } from '@/types'
@@ -54,7 +55,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function AdminActivitiesPage() {
-  const { data, loading, reload } = useFirestoreData(() => getActivities(false))
+  const { data: activities, loading, reload } = useFirestoreData(() => getActivities(false))
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Activity | null>(null)
 
@@ -74,6 +76,8 @@ export default function AdminActivitiesPage() {
   const openEdit = (a: Activity) => {
     reset({
       ...a,
+      category: a.category ?? 'conference',
+      status: a.status ?? 'draft',
       date: a.date ? new Date(a.date).toISOString().slice(0, 10) : '',
       endDate: a.endDate ? new Date(a.endDate).toISOString().slice(0, 10) : '',
       relatedPeople: a.relatedPeople?.join(', ') ?? '',
@@ -96,10 +100,33 @@ export default function AdminActivitiesPage() {
       externalLinks: editing?.externalLinks ?? [],
     }
     try {
-      editing
-        ? await updateActivity(editing.id, payload)
-        : await createActivity(payload as Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Updated' : 'Created', variant: 'success' as never })
+      if (editing) {
+        await updateActivity(editing.id, payload)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: payload.status === 'published' ? 'publish' : 'update',
+            collection: 'activities',
+            documentId: editing.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Updated', variant: 'success' as never })
+      } else {
+        const ref = await createActivity(payload as Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'activities',
+            documentId: ref.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Created', variant: 'success' as never })
+      }
       setDialogOpen(false); reload()
     } catch {
       toast({ title: 'Error', variant: 'destructive' })
@@ -107,7 +134,18 @@ export default function AdminActivitiesPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = activities?.find(a => a.id === id)
     await deleteActivity(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'activities',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }
@@ -116,7 +154,7 @@ export default function AdminActivitiesPage() {
     <div className="p-6 lg:p-8">
       <DataTable
         title="Activities & Events"
-        data={data ?? []}
+        data={activities ?? []}
         loading={loading}
         addLabel="New Activity"
         onAdd={openAdd}

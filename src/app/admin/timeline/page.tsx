@@ -16,13 +16,15 @@ import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/admin/data-table'
 import {
   getTimeline, createTimelineEntry, updateTimelineEntry, deleteTimelineEntry,
+  createAuditLog,
 } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { TimelineEntry, TimelineType } from '@/types'
 
 const schema = z.object({
-  year: z.coerce.number().int().min(1950).max(2100),
+  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1950).max(2100)),
   endYear: z.coerce.number().int().min(1950).max(2100).optional()
     .or(z.literal(0)).transform(v => v || undefined),
   title: z.string().min(3),
@@ -30,7 +32,7 @@ const schema = z.object({
   location: z.string().optional(),
   description: z.string().optional(),
   type: z.enum(['education', 'appointment', 'leadership', 'milestone']),
-  order: z.coerce.number().int().min(0).default(0),
+  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -45,6 +47,7 @@ const TYPE_COLOUR: Record<TimelineType, string> = {
 
 export default function AdminTimelinePage() {
   const { data, loading, reload } = useFirestoreData(getTimeline)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<TimelineEntry | null>(null)
 
@@ -58,7 +61,13 @@ export default function AdminTimelinePage() {
   }
 
   const openEdit = (entry: TimelineEntry) => {
-    reset({ ...entry, endYear: entry.endYear ?? 0 })
+    reset({
+      ...entry,
+      year: entry.year ?? new Date().getFullYear(),
+      type: entry.type ?? 'appointment',
+      order: entry.order ?? 0,
+      endYear: entry.endYear ?? 0,
+    })
     setEditing(entry)
     setDialogOpen(true)
   }
@@ -67,9 +76,29 @@ export default function AdminTimelinePage() {
     try {
       if (editing) {
         await updateTimelineEntry(editing.id, form)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'timeline',
+            documentId: editing.id,
+            documentTitle: form.title,
+          })
+        }
         toast({ title: 'Updated', description: 'Timeline entry updated.', variant: 'success' as never })
       } else {
-        await createTimelineEntry(form as Omit<TimelineEntry, 'id' | 'createdAt' | 'updatedAt'>)
+        const ref = await createTimelineEntry(form as Omit<TimelineEntry, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'timeline',
+            documentId: ref.id,
+            documentTitle: form.title,
+          })
+        }
         toast({ title: 'Added', description: 'Timeline entry created.', variant: 'success' as never })
       }
       setDialogOpen(false)
@@ -80,7 +109,18 @@ export default function AdminTimelinePage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(e => e.id === id)
     await deleteTimelineEntry(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'timeline',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }

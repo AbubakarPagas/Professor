@@ -16,8 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import {
   getGalleryAlbums, createGalleryAlbum, updateGalleryAlbum, deleteGalleryAlbum,
+  createAuditLog,
 } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import { slugify, formatDate } from '@/lib/utils'
 import type { GalleryAlbum, GalleryCategory } from '@/types'
@@ -41,12 +43,13 @@ const schema = z.object({
   venue: z.string().optional(),
   published: z.boolean().default(false),
   featured: z.boolean().default(false),
-  order: z.coerce.number().int().min(0).default(0),
+  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
 })
 type FormData = z.infer<typeof schema>
 
 export default function AdminGalleryPage() {
   const { data: albums, loading, reload } = useFirestoreData(() => getGalleryAlbums(false))
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<GalleryAlbum | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -62,6 +65,8 @@ export default function AdminGalleryPage() {
   const openEdit = (a: GalleryAlbum) => {
     reset({
       ...a,
+      category: a.category ?? 'conference',
+      order: a.order ?? 0,
       eventDate: a.eventDate ? new Date(a.eventDate).toISOString().slice(0, 10) : '',
       coverImageUrl: a.coverImageUrl ?? '',
     })
@@ -75,10 +80,33 @@ export default function AdminGalleryPage() {
       imageCount: editing?.imageCount ?? 0,
     }
     try {
-      editing
-        ? await updateGalleryAlbum(editing.id, payload)
-        : await createGalleryAlbum(payload as Omit<GalleryAlbum, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Album updated' : 'Album created', variant: 'success' as never })
+      if (editing) {
+        await updateGalleryAlbum(editing.id, payload)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: payload.published ? 'publish' : 'update',
+            collection: 'galleryAlbums',
+            documentId: editing.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Album updated', variant: 'success' as never })
+      } else {
+        const ref = await createGalleryAlbum(payload as Omit<GalleryAlbum, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'galleryAlbums',
+            documentId: ref.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Album created', variant: 'success' as never })
+      }
       setDialogOpen(false); reload()
     } catch {
       toast({ title: 'Error', variant: 'destructive' })
@@ -86,9 +114,20 @@ export default function AdminGalleryPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const album = albums?.find(a => a.id === id)
     setDeleting(id)
     try {
       await deleteGalleryAlbum(id)
+      if (user) {
+        await createAuditLog({
+          actorUid: user.uid,
+          actorEmail: user.email!,
+          action: 'delete',
+          collection: 'galleryAlbums',
+          documentId: id,
+          documentTitle: album?.title,
+        })
+      }
       toast({ title: 'Album deleted', variant: 'success' as never })
       reload()
     } finally {

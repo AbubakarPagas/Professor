@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getSiteSettings, upsertSiteSettings } from '@/lib/firestore'
+import { getSiteSettings, upsertSiteSettings, createAuditLog } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { SiteSettings } from '@/types'
 
@@ -27,6 +28,7 @@ type FormData = z.infer<typeof schema>
 
 export default function AdminSeoPage() {
   const { data: settings, loading, reload } = useFirestoreData(getSiteSettings)
+  const { user } = useAuth()
 
   const {
     register, handleSubmit, reset, watch,
@@ -65,6 +67,17 @@ export default function AdminSeoPage() {
         contactFormEnabled: settings?.contactFormEnabled ?? true,
         maintenanceMode:    settings?.maintenanceMode ?? false,
       } as Omit<SiteSettings, 'id' | 'createdAt' | 'updatedAt'>)
+      if (user) {
+        await createAuditLog({
+          actorUid: user.uid,
+          actorEmail: user.email!,
+          action: 'site_setting_change',
+          collection: 'siteSettings',
+          documentId: 'main',
+          documentTitle: 'SEO Settings',
+          details: `Title: ${form.siteTitle}`,
+        })
+      }
       toast({ title: 'SEO settings saved', variant: 'success' as never })
       reload()
     } catch {

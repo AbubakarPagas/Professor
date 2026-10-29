@@ -535,6 +535,7 @@ export interface DashboardCounts {
   patents: number
   awards: number
   research: number
+  mentorship: number
   activities: number
   activitiesDraft: number
   news: number
@@ -547,7 +548,7 @@ export interface DashboardCounts {
 
 export async function getDashboardCounts(): Promise<DashboardCounts> {
   const [
-    pubSnap, patSnap, awardSnap, resSnap,
+    pubSnap, patSnap, awardSnap, resSnap, mentSnap,
     actSnap, actDraftSnap,
     newsSnap, newsDraftSnap,
     albSnap, imgSnap,
@@ -557,6 +558,7 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     getCountFromServer(collection(db, C.patents)),
     getCountFromServer(collection(db, C.awards)),
     getCountFromServer(collection(db, C.research)),
+    getCountFromServer(collection(db, C.mentorship)),
     getCountFromServer(query(collection(db, C.activities), where('status', '==', 'published'))),
     getCountFromServer(query(collection(db, C.activities), where('status', '==', 'draft'))),
     getCountFromServer(query(collection(db, C.news), where('published', '==', true))),
@@ -572,6 +574,7 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     patents:         patSnap.data().count,
     awards:          awardSnap.data().count,
     research:        resSnap.data().count,
+    mentorship:      mentSnap.data().count,
     activities:      actSnap.data().count,
     activitiesDraft: actDraftSnap.data().count,
     news:            newsSnap.data().count,

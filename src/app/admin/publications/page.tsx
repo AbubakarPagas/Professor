@@ -29,8 +29,10 @@ import {
   createPublication,
   updatePublication,
   deletePublication,
+  createAuditLog,
 } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { Publication, PublicationType } from '@/types'
 
@@ -42,13 +44,16 @@ const schema = z.object({
   volume: z.string().optional(),
   issue: z.string().optional(),
   pages: z.string().optional(),
-  year: z.coerce.number().int().min(1900).max(2100),
+  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
   doi: z.string().optional(),
   url: z.string().url().optional().or(z.literal('')),
   abstract: z.string().optional(),
   type: z.enum(['journal', 'conference', 'book', 'book_chapter', 'technical_report', 'thesis']),
   featured: z.boolean().default(false),
-  citations: z.coerce.number().int().min(0).optional(),
+  citations: z.preprocess(
+    v => (v === '' || v === undefined || v === null ? undefined : Number(v)),
+    z.number().int().min(0).optional()
+  ),
 })
 
 type FormData = z.infer<typeof schema>
@@ -65,6 +70,7 @@ const typeLabel: Record<PublicationType, string> = {
 
 export default function AdminPublicationsPage() {
   const { data, loading, error, reload } = useFirestoreData(getPublications)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Publication | null>(null)
 
@@ -84,7 +90,14 @@ export default function AdminPublicationsPage() {
   }
 
   const openEdit = (pub: Publication) => {
-    reset({ ...pub, url: pub.url ?? '', doi: pub.doi ?? '' })
+    reset({
+      ...pub,
+      year: pub.year ?? new Date().getFullYear(),
+      type: pub.type ?? 'journal',
+      citations: pub.citations ?? undefined,
+      url: pub.url ?? '',
+      doi: pub.doi ?? '',
+    })
     setEditing(pub)
     setDialogOpen(true)
   }
@@ -93,9 +106,29 @@ export default function AdminPublicationsPage() {
     try {
       if (editing) {
         await updatePublication(editing.id, data)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'publications',
+            documentId: editing.id,
+            documentTitle: data.title,
+          })
+        }
         toast({ title: 'Updated', description: 'Publication updated.', variant: 'success' as never })
       } else {
-        await createPublication(data as Omit<Publication, 'id' | 'createdAt' | 'updatedAt'>)
+        const ref = await createPublication(data as Omit<Publication, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'publications',
+            documentId: ref.id,
+            documentTitle: data.title,
+          })
+        }
         toast({ title: 'Added', description: 'Publication added.', variant: 'success' as never })
       }
       setDialogOpen(false)
@@ -106,7 +139,18 @@ export default function AdminPublicationsPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(p => p.id === id)
     await deletePublication(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'publications',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }

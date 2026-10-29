@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { getBiography, upsertBiography } from '@/lib/firestore'
+import { getBiography, upsertBiography, createAuditLog } from '@/lib/firestore'
 import { uploadFile, buildStoragePath } from '@/lib/storage'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { Biography } from '@/types'
 
@@ -21,6 +22,7 @@ const schema = z.object({
   name: z.string().min(2),
   title: z.string().min(2),
   subtitle: z.string().optional(),
+  tagline: z.string().optional(),
   bio: z.string().min(20),
   shortBio: z.string().min(10),
   email: z.string().email().optional().or(z.literal('')),
@@ -34,17 +36,18 @@ const schema = z.object({
   orcid: z.string().optional(),
   fellowships: z.string().optional(),
   areasOfExpertise: z.string().optional(),
-  statsPublications: z.coerce.number().int().min(0).default(0),
-  statsPatents: z.coerce.number().int().min(0).default(0),
-  statsAwards: z.coerce.number().int().min(0).default(0),
-  statsYears: z.coerce.number().int().min(0).default(0),
-  statsStudents: z.coerce.number().int().min(0).default(0),
+  statsPublications: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  statsPatents: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  statsAwards: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  statsYears: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  statsStudents: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function AdminBiographyPage() {
   const { data: bio, loading, reload } = useFirestoreData(getBiography)
+  const { user } = useAuth()
   const [uploadProgress, setUploadProgress] = useState(0)
   const [profileImageUrl, setProfileImageUrl] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -56,13 +59,14 @@ export default function AdminBiographyPage() {
     if (bio) {
       reset({
         ...bio,
-        fellowships: bio.fellowships.join(', '),
-        areasOfExpertise: bio.areasOfExpertise.join(', '),
-        statsPublications: bio.stats.publications,
-        statsPatents: bio.stats.patents,
-        statsAwards: bio.stats.awards,
-        statsYears: bio.stats.yearsExperience,
-        statsStudents: bio.stats.studentsSupervised,
+        tagline: bio.tagline ?? '',
+        fellowships: bio.fellowships?.join(', ') ?? '',
+        areasOfExpertise: bio.areasOfExpertise?.join(', ') ?? '',
+        statsPublications: bio.stats?.publications ?? 0,
+        statsPatents: bio.stats?.patents ?? 0,
+        statsAwards: bio.stats?.awards ?? 0,
+        statsYears: bio.stats?.yearsExperience ?? 0,
+        statsStudents: bio.stats?.studentsSupervised ?? 0,
       })
       setProfileImageUrl(bio.profileImageUrl ?? '')
     }
@@ -89,10 +93,10 @@ export default function AdminBiographyPage() {
       title: data.title,
       titles: data.title ? [data.title] : [],
       subtitle: data.subtitle,
+      tagline: data.tagline ?? data.shortBio ?? '',
       bio: data.bio,
       fullBio: data.bio,
       shortBio: data.shortBio,
-      tagline: data.shortBio ?? '',
       email: data.email || undefined,
       phone: data.phone,
       institution: data.institution,
@@ -115,6 +119,16 @@ export default function AdminBiographyPage() {
     }
     try {
       await upsertBiography(payload)
+      if (user) {
+        await createAuditLog({
+          actorUid: user.uid,
+          actorEmail: user.email!,
+          action: 'update',
+          collection: 'siteProfile',
+          documentId: 'main',
+          documentTitle: data.name,
+        })
+      }
       toast({ title: 'Biography saved', variant: 'success' as never })
       reload()
     } catch {
@@ -196,6 +210,11 @@ export default function AdminBiographyPage() {
             <div>
               <Label>Subtitle</Label>
               <Input {...register('subtitle')} placeholder="e.g. Former Vice Chancellor…" className="mt-1" />
+            </div>
+            <div>
+              <Label>Tagline</Label>
+              <Input {...register('tagline')} placeholder="e.g. Innovating Engineering for Africa's Future" className="mt-1" />
+              <p className="text-xs text-charcoal/40 mt-1">Short phrase shown in the hero section.</p>
             </div>
             <div>
               <Label>Short Bio (2–3 sentences) *</Label>

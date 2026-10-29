@@ -27,7 +27,7 @@ const schema = z.object({
   altText: z.string().min(1, 'Alt text is required for accessibility'),
   caption: z.string().optional(),
   credit: z.string().optional(),
-  order: z.coerce.number().int().min(0).default(0),
+  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
   featured: z.boolean().default(false),
 })
 type FormData = z.infer<typeof schema>
@@ -98,7 +98,14 @@ export default function AlbumImagesPage({ params }: { params: Promise<{ albumId:
   }
 
   const openEdit = (img: GalleryImage) => {
-    reset({ title: img.title, altText: img.altText, caption: img.caption, credit: img.credit, order: img.order, featured: img.featured })
+    reset({
+      title: img.title ?? '',
+      altText: img.altText ?? '',
+      caption: img.caption,
+      credit: img.credit,
+      order: img.order ?? 0,
+      featured: img.featured ?? false,
+    })
     setEditTarget(img)
   }
 

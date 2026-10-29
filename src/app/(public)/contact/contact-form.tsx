@@ -22,7 +22,7 @@ const schema = z.object({
   organisation:    z.string().optional(),
   enquiryCategory: z.enum([
     'speaking', 'mentorship', 'research_collaboration', 'institutional', 'media', 'general',
-  ], { errorMap: () => ({ message: 'Please select an enquiry type' }) }),
+  ], { error: 'Please select an enquiry type' }),
   subject:         z.string().min(4, 'Please enter a subject'),
   message:         z.string().min(20, 'Message must be at least 20 characters'),
 })

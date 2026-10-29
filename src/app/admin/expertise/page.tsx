@@ -14,8 +14,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { DataTable } from '@/components/admin/data-table'
 import {
   getExpertiseAreas, createExpertiseArea, updateExpertiseArea, deleteExpertiseArea,
+  createAuditLog,
 } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { ExpertiseArea } from '@/types'
 
@@ -23,7 +25,7 @@ const schema = z.object({
   title: z.string().min(2, 'Title is required'),
   description: z.string().optional(),
   icon: z.string().optional(),
-  order: z.coerce.number().int().min(0).default(0),
+  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
   active: z.boolean().default(true),
 })
 
@@ -31,6 +33,7 @@ type FormData = z.infer<typeof schema>
 
 export default function AdminExpertisePage() {
   const { data, loading, reload } = useFirestoreData(getExpertiseAreas)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<ExpertiseArea | null>(null)
 
@@ -45,7 +48,11 @@ export default function AdminExpertisePage() {
   }
 
   const openEdit = (area: ExpertiseArea) => {
-    reset(area)
+    reset({
+      ...area,
+      order: area.order ?? 0,
+      active: area.active ?? true,
+    })
     setEditing(area)
     setDialogOpen(true)
   }
@@ -54,9 +61,29 @@ export default function AdminExpertisePage() {
     try {
       if (editing) {
         await updateExpertiseArea(editing.id, form)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'expertise',
+            documentId: editing.id,
+            documentTitle: form.title,
+          })
+        }
         toast({ title: 'Updated', variant: 'success' as never })
       } else {
-        await createExpertiseArea(form as Omit<ExpertiseArea, 'id' | 'createdAt' | 'updatedAt'>)
+        const ref = await createExpertiseArea(form as Omit<ExpertiseArea, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'expertise',
+            documentId: ref.id,
+            documentTitle: form.title,
+          })
+        }
         toast({ title: 'Added', variant: 'success' as never })
       }
       setDialogOpen(false)
@@ -67,7 +94,18 @@ export default function AdminExpertisePage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(e => e.id === id)
     await deleteExpertiseArea(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'expertise',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }

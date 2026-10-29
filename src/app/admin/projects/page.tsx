@@ -15,8 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DataTable } from '@/components/admin/data-table'
 import {
   getResearchProjects, createResearchProject, updateResearchProject, deleteResearchProject,
+  createAuditLog,
 } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { ResearchProject, ResearchStatus } from '@/types'
 
@@ -25,7 +27,7 @@ const schema = z.object({
   description: z.string().min(10),
   fundingBody: z.string().optional(),
   fundingAmount: z.string().optional(),
-  startYear: z.coerce.number().int().min(1900).max(2100),
+  startYear: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
   endYear: z.coerce.number().int().min(1900).max(2100).optional()
     .or(z.literal(0)).transform(v => v || undefined),
   status: z.enum(['ongoing', 'completed', 'planned']),
@@ -46,6 +48,7 @@ const STATUS_COLOUR: Record<ResearchStatus, string> = {
 
 export default function AdminProjectsPage() {
   const { data, loading, reload } = useFirestoreData(getResearchProjects)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<ResearchProject | null>(null)
 
@@ -63,6 +66,8 @@ export default function AdminProjectsPage() {
   const openEdit = (r: ResearchProject) => {
     reset({
       ...r,
+      startYear: r.startYear ?? new Date().getFullYear(),
+      status: r.status ?? 'ongoing',
       keywords: r.keywords.join(', '),
       collaborators: r.collaborators?.join(', ') ?? '',
       endYear: r.endYear ?? 0,
@@ -81,10 +86,33 @@ export default function AdminProjectsPage() {
         : [],
     }
     try {
-      editing
-        ? await updateResearchProject(editing.id, payload)
-        : await createResearchProject(payload as Omit<ResearchProject, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Updated' : 'Created', variant: 'success' as never })
+      if (editing) {
+        await updateResearchProject(editing.id, payload)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'research',
+            documentId: editing.id,
+            documentTitle: form.title,
+          })
+        }
+        toast({ title: 'Updated', variant: 'success' as never })
+      } else {
+        const ref = await createResearchProject(payload as Omit<ResearchProject, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'research',
+            documentId: ref.id,
+            documentTitle: form.title,
+          })
+        }
+        toast({ title: 'Created', variant: 'success' as never })
+      }
       setDialogOpen(false)
       reload()
     } catch {
@@ -93,7 +121,18 @@ export default function AdminProjectsPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(r => r.id === id)
     await deleteResearchProject(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'research',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }

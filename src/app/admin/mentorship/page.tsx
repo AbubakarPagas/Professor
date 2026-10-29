@@ -15,8 +15,10 @@ import { DataTable } from '@/components/admin/data-table'
 import {
   getMentorshipPrograms, createMentorshipProgram,
   updateMentorshipProgram, deleteMentorshipProgram,
+  createAuditLog,
 } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { MentorshipProgram } from '@/types'
 
@@ -27,13 +29,14 @@ const schema = z.object({
   outcomes: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
   active: z.boolean().default(true),
-  order: z.coerce.number().int().min(0).default(0),
+  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function AdminMentorshipPage() {
   const { data, loading, reload } = useFirestoreData(getMentorshipPrograms)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<MentorshipProgram | null>(null)
 
@@ -48,17 +51,44 @@ export default function AdminMentorshipPage() {
   }
 
   const openEdit = (m: MentorshipProgram) => {
-    reset({ ...m, imageUrl: m.imageUrl ?? '' })
+    reset({
+      ...m,
+      order: m.order ?? 0,
+      imageUrl: m.imageUrl ?? '',
+    })
     setEditing(m)
     setDialogOpen(true)
   }
 
   const onSubmit = async (form: FormData) => {
     try {
-      editing
-        ? await updateMentorshipProgram(editing.id, form)
-        : await createMentorshipProgram(form as Omit<MentorshipProgram, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Updated' : 'Added', variant: 'success' as never })
+      if (editing) {
+        await updateMentorshipProgram(editing.id, form)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'mentorshipPrograms',
+            documentId: editing.id,
+            documentTitle: form.title,
+          })
+        }
+        toast({ title: 'Updated', variant: 'success' as never })
+      } else {
+        const ref = await createMentorshipProgram(form as Omit<MentorshipProgram, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'mentorshipPrograms',
+            documentId: ref.id,
+            documentTitle: form.title,
+          })
+        }
+        toast({ title: 'Added', variant: 'success' as never })
+      }
       setDialogOpen(false)
       reload()
     } catch {
@@ -67,7 +97,18 @@ export default function AdminMentorshipPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(m => m.id === id)
     await deleteMentorshipProgram(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'mentorshipPrograms',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }

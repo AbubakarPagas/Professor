@@ -11,8 +11,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { DataTable } from '@/components/admin/data-table'
-import { getNewsItems, createNewsItem, updateNewsItem, deleteNewsItem } from '@/lib/firestore'
+import { getNewsItems, createNewsItem, updateNewsItem, deleteNewsItem, createAuditLog } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import { slugify, formatDate } from '@/lib/utils'
 import type { NewsItem } from '@/types'
@@ -32,7 +33,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function AdminNewsPage() {
-  const { data, loading, reload } = useFirestoreData(() => getNewsItems(false))
+  const { data: newsItems, loading, reload } = useFirestoreData(() => getNewsItems(false))
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<NewsItem | null>(null)
 
@@ -67,10 +69,33 @@ export default function AdminNewsPage() {
       publishedAt: new Date(data.publishedAt),
     }
     try {
-      editing
-        ? await updateNewsItem(editing.id, payload)
-        : await createNewsItem(payload as Omit<NewsItem, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Updated' : 'Published', variant: 'success' as never })
+      if (editing) {
+        await updateNewsItem(editing.id, payload)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: payload.published ? 'publish' : 'update',
+            collection: 'news',
+            documentId: editing.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Updated', variant: 'success' as never })
+      } else {
+        const ref = await createNewsItem(payload as Omit<NewsItem, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'news',
+            documentId: ref.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Published', variant: 'success' as never })
+      }
       setDialogOpen(false)
       reload()
     } catch {
@@ -79,7 +104,18 @@ export default function AdminNewsPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = newsItems?.find(n => n.id === id)
     await deleteNewsItem(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'news',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }
@@ -88,7 +124,7 @@ export default function AdminNewsPage() {
     <div className="p-6 lg:p-8">
       <DataTable
         title="News & Press"
-        data={data ?? []}
+        data={newsItems ?? []}
         loading={loading}
         addLabel="New Article"
         onAdd={openAdd}

@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { getSiteSettings, upsertSiteSettings } from '@/lib/firestore'
+import { getSiteSettings, upsertSiteSettings, createAuditLog } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { SiteSettings } from '@/types'
 
@@ -31,6 +32,7 @@ type FormData = z.infer<typeof schema>
 
 export default function AdminSettingsPage() {
   const { data: settings, loading, reload } = useFirestoreData(getSiteSettings)
+  const { user } = useAuth()
 
   const {
     register, handleSubmit, reset, formState: { isSubmitting, isDirty },
@@ -62,6 +64,16 @@ export default function AdminSettingsPage() {
         contactFormEnabled: form.contactFormEnabled ?? true,
         maintenanceMode:    form.maintenanceMode ?? false,
       } as Omit<SiteSettings, 'id' | 'createdAt' | 'updatedAt'>)
+      if (user) {
+        await createAuditLog({
+          actorUid: user.uid,
+          actorEmail: user.email!,
+          action: 'site_setting_change',
+          collection: 'siteSettings',
+          documentId: 'main',
+          documentTitle: 'Site Settings',
+        })
+      }
       toast({ title: 'Settings saved', variant: 'success' as never })
       reload()
     } catch {

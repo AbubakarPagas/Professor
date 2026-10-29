@@ -14,8 +14,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DataTable } from '@/components/admin/data-table'
 import { Badge } from '@/components/ui/badge'
-import { getPatents, createPatent, updatePatent, deletePatent } from '@/lib/firestore'
+import { getPatents, createPatent, updatePatent, deletePatent, createAuditLog } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { Patent, PatentStatus } from '@/types'
 
@@ -25,7 +26,7 @@ const schema = z.object({
   patentNumber: z.string().optional(),
   country: z.string().min(2),
   status: z.enum(['granted', 'pending', 'expired']),
-  year: z.coerce.number().int().min(1900).max(2100),
+  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
   description: z.string().optional(),
   url: z.string().url().optional().or(z.literal('')),
 })
@@ -40,6 +41,7 @@ const statusColour: Record<PatentStatus, string> = {
 
 export default function AdminPatentsPage() {
   const { data, loading, reload } = useFirestoreData(getPatents)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Patent | null>(null)
 
@@ -53,7 +55,12 @@ export default function AdminPatentsPage() {
   }
 
   const openEdit = (p: Patent) => {
-    reset({ ...p, url: p.url ?? '' })
+    reset({
+      ...p,
+      year: p.year ?? new Date().getFullYear(),
+      status: p.status ?? 'granted',
+      url: p.url ?? '',
+    })
     setEditing(p)
     setDialogOpen(true)
   }
@@ -62,9 +69,29 @@ export default function AdminPatentsPage() {
     try {
       if (editing) {
         await updatePatent(editing.id, data)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'patents',
+            documentId: editing.id,
+            documentTitle: data.title,
+          })
+        }
         toast({ title: 'Updated', variant: 'success' as never })
       } else {
-        await createPatent(data as Omit<Patent, 'id' | 'createdAt' | 'updatedAt'>)
+        const ref = await createPatent(data as Omit<Patent, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'patents',
+            documentId: ref.id,
+            documentTitle: data.title,
+          })
+        }
         toast({ title: 'Added', variant: 'success' as never })
       }
       setDialogOpen(false)
@@ -75,7 +102,18 @@ export default function AdminPatentsPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(p => p.id === id)
     await deletePatent(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'patents',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }

@@ -11,15 +11,16 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DataTable } from '@/components/admin/data-table'
-import { getAwards, createAward, updateAward, deleteAward } from '@/lib/firestore'
+import { getAwards, createAward, updateAward, deleteAward, createAuditLog } from '@/lib/firestore'
 import { useFirestoreData } from '@/hooks/use-firestore'
+import { useAuth } from '@/lib/auth-context'
 import { toast } from '@/hooks/use-toast'
 import type { Award, AwardCategory } from '@/types'
 
 const schema = z.object({
   title: z.string().min(3),
   organisation: z.string().min(2),
-  year: z.coerce.number().int().min(1900).max(2100),
+  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
   category: z.enum(['national', 'international', 'fellowship', 'recognition', 'academic']),
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
@@ -31,6 +32,7 @@ const categories: AwardCategory[] = ['national', 'international', 'fellowship', 
 
 export default function AdminAwardsPage() {
   const { data, loading, reload } = useFirestoreData(getAwards)
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Award | null>(null)
 
@@ -44,17 +46,45 @@ export default function AdminAwardsPage() {
   }
 
   const openEdit = (a: Award) => {
-    reset({ ...a, imageUrl: a.imageUrl ?? '' })
+    reset({
+      ...a,
+      year: a.year ?? new Date().getFullYear(),
+      category: a.category ?? 'national',
+      imageUrl: a.imageUrl ?? '',
+    })
     setEditing(a)
     setDialogOpen(true)
   }
 
   const onSubmit = async (data: FormData) => {
     try {
-      editing
-        ? await updateAward(editing.id, data)
-        : await createAward(data as Omit<Award, 'id' | 'createdAt' | 'updatedAt'>)
-      toast({ title: editing ? 'Updated' : 'Added', variant: 'success' as never })
+      if (editing) {
+        await updateAward(editing.id, data)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'update',
+            collection: 'awards',
+            documentId: editing.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Updated', variant: 'success' as never })
+      } else {
+        const ref = await createAward(data as Omit<Award, 'id' | 'createdAt' | 'updatedAt'>)
+        if (user) {
+          await createAuditLog({
+            actorUid: user.uid,
+            actorEmail: user.email!,
+            action: 'create',
+            collection: 'awards',
+            documentId: ref.id,
+            documentTitle: data.title,
+          })
+        }
+        toast({ title: 'Added', variant: 'success' as never })
+      }
       setDialogOpen(false)
       reload()
     } catch {
@@ -63,7 +93,18 @@ export default function AdminAwardsPage() {
   }
 
   const handleDelete = async (id: string) => {
+    const item = data?.find(a => a.id === id)
     await deleteAward(id)
+    if (user) {
+      await createAuditLog({
+        actorUid: user.uid,
+        actorEmail: user.email!,
+        action: 'delete',
+        collection: 'awards',
+        documentId: id,
+        documentTitle: item?.title,
+      })
+    }
     toast({ title: 'Deleted', variant: 'success' as never })
     reload()
   }
