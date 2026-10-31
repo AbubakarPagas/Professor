@@ -27,13 +27,13 @@ const addSchema = z.object({
   email:       z.string().email(),
   displayName: z.string().optional(),
   role:        z.enum(['superadmin', 'editor', 'readonly']),
-  active:      z.boolean().default(true),
+  active:      z.boolean(),
 })
 
 const editSchema = z.object({
   displayName: z.string().optional(),
   role:        z.enum(['superadmin', 'editor', 'readonly']),
-  active:      z.boolean().default(true),
+  active:      z.boolean(),
 })
 
 type AddFormData  = z.infer<typeof addSchema>
@@ -66,6 +66,7 @@ export default function AdminUsersPage() {
 
   const editForm = useForm<EditFormData>({
     resolver: zodResolver(editSchema),
+    defaultValues: { role: 'editor', active: true },
   })
 
   // Only superadmin can manage users
@@ -205,7 +206,7 @@ export default function AdminUsersPage() {
         loading={loading}
         searchKeys={['email', 'displayName']}
         onEdit={u => {
-          editForm.reset({ role: u.role, displayName: u.displayName ?? '', active: u.active })
+          editForm.reset({ role: u.role ?? 'editor', displayName: u.displayName ?? '', active: u.active ?? true })
           setEditing(u)
         }}
         onDelete={id => {

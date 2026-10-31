@@ -21,8 +21,8 @@ const schema = z.object({
   contactPhone:       z.string().optional(),
   twitterHandle:      z.string().optional(),
   linkedIn:           z.string().url().optional().or(z.literal('')),
-  contactFormEnabled: z.boolean().default(true),
-  maintenanceMode:    z.boolean().default(false),
+  contactFormEnabled: z.boolean(),
+  maintenanceMode:    z.boolean(),
   // Derived from SiteProfile but editable here for convenience
   siteTitle:          z.string().min(3).optional().or(z.literal('')),
   siteDescription:    z.string().optional(),
@@ -36,7 +36,14 @@ export default function AdminSettingsPage() {
 
   const {
     register, handleSubmit, reset, formState: { isSubmitting, isDirty },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      contactEmail: '', contactPhone: '', twitterHandle: '',
+      linkedIn: '', siteTitle: '', siteDescription: '',
+      contactFormEnabled: true, maintenanceMode: false,
+    },
+  })
 
   useEffect(() => {
     if (settings) {

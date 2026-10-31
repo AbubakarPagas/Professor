@@ -39,7 +39,7 @@ const schema = z.object({
   keywords: z.string().min(1),
   outcomes: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
-  featured: z.boolean().default(false),
+  featured: z.boolean(),
 })
 
 type FormData = z.infer<typeof schema>

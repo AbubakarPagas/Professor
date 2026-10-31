@@ -41,8 +41,8 @@ const schema = z.object({
   category: z.enum(['conference','workshop','research','award','mentorship','institutional','community','portrait','other']),
   eventDate: z.string().optional(),
   venue: z.string().optional(),
-  published: z.boolean().default(false),
-  featured: z.boolean().default(false),
+  published: z.boolean(),
+  featured: z.boolean(),
   order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
 })
 type FormData = z.infer<typeof schema>

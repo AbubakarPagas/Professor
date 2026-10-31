@@ -47,7 +47,7 @@ const schema = z.object({
   coverImageUrl: z.string().url().optional().or(z.literal('')),
   category: z.enum(['conference','workshop','lecture','award_ceremony','field_visit','collaboration','entrepreneurship','mentorship','community','other']),
   status: z.enum(['draft','published','archived']),
-  featured: z.boolean().default(false),
+  featured: z.boolean(),
   tags: z.string().optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),

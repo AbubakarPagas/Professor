@@ -49,7 +49,7 @@ const schema = z.object({
   url: z.string().url().optional().or(z.literal('')),
   abstract: z.string().optional(),
   type: z.enum(['journal', 'conference', 'book', 'book_chapter', 'technical_report', 'thesis']),
-  featured: z.boolean().default(false),
+  featured: z.boolean(),
   citations: z.preprocess(
     v => (v === '' || v === undefined || v === null ? undefined : Number(v)),
     z.number().int().min(0).optional()

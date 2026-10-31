@@ -28,7 +28,7 @@ const schema = z.object({
   caption: z.string().optional(),
   credit: z.string().optional(),
   order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
-  featured: z.boolean().default(false),
+  featured: z.boolean(),
 })
 type FormData = z.infer<typeof schema>
 

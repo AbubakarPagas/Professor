@@ -28,7 +28,7 @@ const schema = z.object({
   targetAudience: z.string().min(5),
   outcomes: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
-  active: z.boolean().default(true),
+  active: z.boolean(),
   order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
 })
 

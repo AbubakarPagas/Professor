@@ -1,15 +1,3 @@
-/**
- * Next.js 16 Proxy — server-side admin route protection.
- * (Renamed from middleware.ts — Next.js 16 uses the "proxy" convention)
- *
- * This adds a first layer of defence at the edge: admin routes will
- * return a redirect to /admin/login for any request that does not
- * carry a Firebase session cookie.
- *
- * NOTE: Full authorisation is enforced by Firestore Security Rules.
- * This proxy prevents direct URL access only and is NOT a substitute
- * for server-side Firebase token verification on sensitive write operations.
- */
 
 import { type NextRequest, NextResponse } from 'next/server'
 

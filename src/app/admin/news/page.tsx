@@ -25,7 +25,7 @@ const schema = z.object({
   body: z.string().min(20),
   coverImageUrl: z.string().url().optional().or(z.literal('')),
   tags: z.string().optional(),
-  published: z.boolean().default(false),
+  published: z.boolean(),
   publishedAt: z.string().min(1),
   author: z.string().optional(),
 })
