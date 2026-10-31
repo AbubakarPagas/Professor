@@ -13,7 +13,7 @@ import {
   onAuthStateChanged,
   type User,
 } from 'firebase/auth'
-import { auth } from './firebase'
+import { getFirebaseAuth } from './firebase'
 import { getAdminUserByUid } from './firestore'
 import type { AdminUser, UserRole } from '@/types'
 
@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    const auth = getFirebaseAuth()
     const unsubscribe = onAuthStateChanged(auth, async u => {
       setUser(u)
       if (u) {
@@ -63,11 +64,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    const auth = getFirebaseAuth()
     const cred = await signInWithEmailAndPassword(auth, email, password)
     await loadAdminUser(cred.user)
   }
 
   const signOut = async () => {
+    const auth = getFirebaseAuth()
     await firebaseSignOut(auth)
     setAdminUser(null)
   }

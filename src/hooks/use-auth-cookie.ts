@@ -12,13 +12,14 @@
 
 import { useEffect } from 'react'
 import { onAuthStateChanged } from 'firebase/auth'
-import { auth } from '@/lib/firebase'
+import { getFirebaseAuth } from '@/lib/firebase'
 
 const COOKIE_NAME = 'auth-token'
 const COOKIE_MAX_AGE = 60 * 60 // 1 hour (Firebase ID tokens expire after 1h)
 
 export function useAuthCookie() {
   useEffect(() => {
+    const auth = getFirebaseAuth()
     const unsubscribe = onAuthStateChanged(auth, async user => {
       if (user) {
         // Refresh the token and store only a flag value; the actual

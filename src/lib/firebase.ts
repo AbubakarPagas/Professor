@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app'
+import { getAuth, type Auth } from 'firebase/auth'
+import { getFirestore, type Firestore } from 'firebase/firestore'
+import { getStorage, type FirebaseStorage } from 'firebase/storage'
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,13 +13,31 @@ const firebaseConfig = {
   measurementId:     process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-// Prevent duplicate initialisation in Next.js hot-reload.
-// This file must ONLY be imported inside 'use client' components, hooks,
-// and client-side service files (auth-context, storage, firestore).
-// Server components and build-time code must use src/lib/firestore-server.ts.
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+// initializeApp just stores config — safe at module level in any context.
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig)
 
-export const auth    = getAuth(app)
-export const db      = getFirestore(app)
-export const storage = getStorage(app)
+// ─── Lazy service singletons ──────────────────────────────────────────────────
+// getAuth / getFirestore / getStorage are only called inside the getters below,
+// NOT at module level. This means importing this file is safe during SSR / build
+// — the Firebase Auth SDK only initializes when a getter is first called (which
+// happens in client components via useEffect, never during prerendering).
+
+let _auth: Auth | null = null
+export function getFirebaseAuth(): Auth {
+  if (!_auth) _auth = getAuth(app)
+  return _auth
+}
+
+let _db: Firestore | null = null
+export function getFirebaseDb(): Firestore {
+  if (!_db) _db = getFirestore(app)
+  return _db
+}
+
+let _storage: FirebaseStorage | null = null
+export function getFirebaseStorage(): FirebaseStorage {
+  if (!_storage) _storage = getStorage(app)
+  return _storage
+}
+
 export default app

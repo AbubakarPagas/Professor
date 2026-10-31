@@ -8,7 +8,7 @@ import {
   getDownloadURL,
   deleteObject,
 } from 'firebase/storage'
-import { storage } from './firebase'
+import { getFirebaseStorage } from './firebase'
 
 export type UploadProgressCallback = (progress: number) => void
 
@@ -23,6 +23,7 @@ export async function uploadFile(
   path: string,
   onProgress?: UploadProgressCallback
 ): Promise<string> {
+  const storage = getFirebaseStorage()
   const storageRef = ref(storage, path)
   const uploadTask = uploadBytesResumable(storageRef, file)
 
@@ -46,6 +47,7 @@ export async function uploadFile(
  * Delete a file from Firebase Storage by its full storage path or download URL.
  */
 export async function deleteFile(pathOrUrl: string): Promise<void> {
+  const storage = getFirebaseStorage()
   // If it is a full download URL, extract the path portion
   const storageRef = pathOrUrl.startsWith('https://')
     ? ref(storage, decodeURIComponent(new URL(pathOrUrl).pathname.split('/o/')[1].split('?')[0]))

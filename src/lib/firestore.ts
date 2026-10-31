@@ -22,7 +22,7 @@ import {
   type QueryConstraint,
   getCountFromServer,
 } from 'firebase/firestore'
-import { db } from './firebase'
+import { getFirebaseDb } from './firebase'
 import type {
   SiteProfile,
   Biography,
@@ -43,6 +43,13 @@ import type {
   MentorshipProgram,
   ContactMessage,
 } from '@/types'
+
+// ─── Lazy Firestore instance ───────────────────────────────────────────────
+// Only initialized on first function call, never at module import time.
+// This keeps firestore.ts safe to import during SSR / build.
+function db() {
+  return getFirebaseDb()
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -95,7 +102,7 @@ const C = {
 // ─── Site Profile / Biography ─────────────────────────────────────────────
 
 export async function getSiteProfile(): Promise<SiteProfile | null> {
-  const snap = await getDoc(doc(db, C.profile, 'main'))
+  const snap = await getDoc(doc(db(), C.profile, 'main'))
   if (!snap.exists()) return null
   return mapDoc<SiteProfile>(snap.data(), snap.id)
 }
@@ -105,7 +112,7 @@ export const getBiography = getSiteProfile
 
 export async function upsertSiteProfile(data: Omit<SiteProfile, 'id' | 'createdAt' | 'updatedAt'>) {
   await setDoc(
-    doc(db, C.profile, 'main'),
+    doc(db(), C.profile, 'main'),
     { ...data, updatedAt: serverTimestamp() },
     { merge: true }
   )
@@ -117,34 +124,34 @@ export const upsertBiography = upsertSiteProfile
 // ─── Timeline ─────────────────────────────────────────────────────────────
 
 export async function getTimeline(): Promise<TimelineEntry[]> {
-  const q = query(collection(db, C.timeline), orderBy('year', 'desc'), orderBy('order', 'asc'))
+  const q = query(collection(db(), C.timeline), orderBy('year', 'desc'), orderBy('order', 'asc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<TimelineEntry>(d.data(), d.id))
 }
 
 export async function createTimelineEntry(data: Omit<TimelineEntry, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.timeline), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.timeline), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateTimelineEntry(id: string, data: Partial<TimelineEntry>) {
-  return updateDoc(doc(db, C.timeline, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.timeline, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteTimelineEntry(id: string) {
-  return deleteDoc(doc(db, C.timeline, id))
+  return deleteDoc(doc(db(), C.timeline, id))
 }
 
 // ─── Publications ─────────────────────────────────────────────────────────
 
 export async function getPublications(): Promise<Publication[]> {
-  const q = query(collection(db, C.publications), orderBy('year', 'desc'))
+  const q = query(collection(db(), C.publications), orderBy('year', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<Publication>(d.data(), d.id))
 }
 
 export async function getFeaturedPublications(n = 5): Promise<Publication[]> {
   const q = query(
-    collection(db, C.publications),
+    collection(db(), C.publications),
     where('featured', '==', true),
     orderBy('year', 'desc'),
     limit(n)
@@ -154,68 +161,68 @@ export async function getFeaturedPublications(n = 5): Promise<Publication[]> {
 }
 
 export async function createPublication(data: Omit<Publication, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.publications), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.publications), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updatePublication(id: string, data: Partial<Publication>) {
-  return updateDoc(doc(db, C.publications, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.publications, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deletePublication(id: string) {
-  return deleteDoc(doc(db, C.publications, id))
+  return deleteDoc(doc(db(), C.publications, id))
 }
 
 // ─── Patents ──────────────────────────────────────────────────────────────
 
 export async function getPatents(): Promise<Patent[]> {
-  const q = query(collection(db, C.patents), orderBy('year', 'desc'))
+  const q = query(collection(db(), C.patents), orderBy('year', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<Patent>(d.data(), d.id))
 }
 
 export async function createPatent(data: Omit<Patent, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.patents), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.patents), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updatePatent(id: string, data: Partial<Patent>) {
-  return updateDoc(doc(db, C.patents, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.patents, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deletePatent(id: string) {
-  return deleteDoc(doc(db, C.patents, id))
+  return deleteDoc(doc(db(), C.patents, id))
 }
 
 // ─── Awards ───────────────────────────────────────────────────────────────
 
 export async function getAwards(): Promise<Award[]> {
-  const q = query(collection(db, C.awards), orderBy('year', 'desc'))
+  const q = query(collection(db(), C.awards), orderBy('year', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<Award>(d.data(), d.id))
 }
 
 export async function createAward(data: Omit<Award, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.awards), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.awards), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateAward(id: string, data: Partial<Award>) {
-  return updateDoc(doc(db, C.awards, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.awards, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteAward(id: string) {
-  return deleteDoc(doc(db, C.awards, id))
+  return deleteDoc(doc(db(), C.awards, id))
 }
 
 // ─── Research ─────────────────────────────────────────────────────────────
 
 export async function getResearchProjects(): Promise<ResearchProject[]> {
-  const q = query(collection(db, C.research), orderBy('startYear', 'desc'))
+  const q = query(collection(db(), C.research), orderBy('startYear', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<ResearchProject>(d.data(), d.id))
 }
 
 export async function getFeaturedResearch(n = 4): Promise<ResearchProject[]> {
   const q = query(
-    collection(db, C.research),
+    collection(db(), C.research),
     where('featured', '==', true),
     orderBy('startYear', 'desc'),
     limit(n)
@@ -225,15 +232,15 @@ export async function getFeaturedResearch(n = 4): Promise<ResearchProject[]> {
 }
 
 export async function createResearchProject(data: Omit<ResearchProject, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.research), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.research), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateResearchProject(id: string, data: Partial<ResearchProject>) {
-  return updateDoc(doc(db, C.research, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.research, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteResearchProject(id: string) {
-  return deleteDoc(doc(db, C.research, id))
+  return deleteDoc(doc(db(), C.research, id))
 }
 
 // ─── Gallery Albums ───────────────────────────────────────────────────────
@@ -241,40 +248,40 @@ export async function deleteResearchProject(id: string) {
 export async function getGalleryAlbums(publishedOnly = true): Promise<GalleryAlbum[]> {
   const constraints: QueryConstraint[] = [orderBy('order', 'asc')]
   if (publishedOnly) constraints.unshift(where('published', '==', true))
-  const snap = await getDocs(query(collection(db, C.albums), ...constraints))
+  const snap = await getDocs(query(collection(db(), C.albums), ...constraints))
   return snap.docs.map(d => mapDoc<GalleryAlbum>(d.data(), d.id))
 }
 
 export async function getGalleryAlbumBySlug(slug: string): Promise<GalleryAlbum | null> {
-  const q = query(collection(db, C.albums), where('slug', '==', slug), limit(1))
+  const q = query(collection(db(), C.albums), where('slug', '==', slug), limit(1))
   const snap = await getDocs(q)
   if (snap.empty) return null
   return mapDoc<GalleryAlbum>(snap.docs[0].data(), snap.docs[0].id)
 }
 
 export async function getGalleryAlbumById(id: string): Promise<GalleryAlbum | null> {
-  const snap = await getDoc(doc(db, C.albums, id))
+  const snap = await getDoc(doc(db(), C.albums, id))
   if (!snap.exists()) return null
   return mapDoc<GalleryAlbum>(snap.data(), snap.id)
 }
 
 export async function createGalleryAlbum(data: Omit<GalleryAlbum, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.albums), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.albums), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateGalleryAlbum(id: string, data: Partial<GalleryAlbum>) {
-  return updateDoc(doc(db, C.albums, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.albums, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteGalleryAlbum(id: string) {
-  return deleteDoc(doc(db, C.albums, id))
+  return deleteDoc(doc(db(), C.albums, id))
 }
 
 // ─── Gallery Images ───────────────────────────────────────────────────────
 
 export async function getGalleryImages(albumId: string): Promise<GalleryImage[]> {
   const q = query(
-    collection(db, C.images),
+    collection(db(), C.images),
     where('albumId', '==', albumId),
     orderBy('order', 'asc')
   )
@@ -284,7 +291,7 @@ export async function getGalleryImages(albumId: string): Promise<GalleryImage[]>
 
 export async function getFeaturedImages(n = 8): Promise<GalleryImage[]> {
   const q = query(
-    collection(db, C.images),
+    collection(db(), C.images),
     where('featured', '==', true),
     limit(n)
   )
@@ -293,15 +300,15 @@ export async function getFeaturedImages(n = 8): Promise<GalleryImage[]> {
 }
 
 export async function createGalleryImage(data: Omit<GalleryImage, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.images), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.images), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateGalleryImage(id: string, data: Partial<GalleryImage>) {
-  return updateDoc(doc(db, C.images, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.images, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteGalleryImage(id: string) {
-  return deleteDoc(doc(db, C.images, id))
+  return deleteDoc(doc(db(), C.images, id))
 }
 
 // ─── Activities ───────────────────────────────────────────────────────────
@@ -309,12 +316,12 @@ export async function deleteGalleryImage(id: string) {
 export async function getActivities(publishedOnly = true): Promise<Activity[]> {
   const constraints: QueryConstraint[] = [orderBy('date', 'desc')]
   if (publishedOnly) constraints.unshift(where('status', '==', 'published'))
-  const snap = await getDocs(query(collection(db, C.activities), ...constraints))
+  const snap = await getDocs(query(collection(db(), C.activities), ...constraints))
   return snap.docs.map(d => mapDoc<Activity>(d.data(), d.id))
 }
 
 export async function getActivityBySlug(slug: string): Promise<Activity | null> {
-  const q = query(collection(db, C.activities), where('slug', '==', slug), limit(1))
+  const q = query(collection(db(), C.activities), where('slug', '==', slug), limit(1))
   const snap = await getDocs(q)
   if (snap.empty) return null
   return mapDoc<Activity>(snap.docs[0].data(), snap.docs[0].id)
@@ -322,7 +329,7 @@ export async function getActivityBySlug(slug: string): Promise<Activity | null> 
 
 export async function getFeaturedActivities(n = 3): Promise<Activity[]> {
   const q = query(
-    collection(db, C.activities),
+    collection(db(), C.activities),
     where('status', '==', 'published'),
     where('featured', '==', true),
     orderBy('date', 'desc'),
@@ -333,15 +340,15 @@ export async function getFeaturedActivities(n = 3): Promise<Activity[]> {
 }
 
 export async function createActivity(data: Omit<Activity, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.activities), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.activities), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateActivity(id: string, data: Partial<Activity>) {
-  return updateDoc(doc(db, C.activities, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.activities, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteActivity(id: string) {
-  return deleteDoc(doc(db, C.activities, id))
+  return deleteDoc(doc(db(), C.activities, id))
 }
 
 // ─── News ─────────────────────────────────────────────────────────────────
@@ -349,59 +356,59 @@ export async function deleteActivity(id: string) {
 export async function getNewsItems(publishedOnly = true): Promise<NewsItem[]> {
   const constraints: QueryConstraint[] = [orderBy('publishedAt', 'desc')]
   if (publishedOnly) constraints.unshift(where('published', '==', true))
-  const snap = await getDocs(query(collection(db, C.news), ...constraints))
+  const snap = await getDocs(query(collection(db(), C.news), ...constraints))
   return snap.docs.map(d => mapDoc<NewsItem>(d.data(), d.id))
 }
 
 export async function getNewsItemBySlug(slug: string): Promise<NewsItem | null> {
-  const q = query(collection(db, C.news), where('slug', '==', slug), limit(1))
+  const q = query(collection(db(), C.news), where('slug', '==', slug), limit(1))
   const snap = await getDocs(q)
   if (snap.empty) return null
   return mapDoc<NewsItem>(snap.docs[0].data(), snap.docs[0].id)
 }
 
 export async function createNewsItem(data: Omit<NewsItem, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.news), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.news), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateNewsItem(id: string, data: Partial<NewsItem>) {
-  return updateDoc(doc(db, C.news, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.news, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteNewsItem(id: string) {
-  return deleteDoc(doc(db, C.news, id))
+  return deleteDoc(doc(db(), C.news, id))
 }
 
 // ─── Mentorship ───────────────────────────────────────────────────────────
 
 export async function getMentorshipPrograms(): Promise<MentorshipProgram[]> {
-  const q = query(collection(db, C.mentorship), orderBy('order', 'asc'))
+  const q = query(collection(db(), C.mentorship), orderBy('order', 'asc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<MentorshipProgram>(d.data(), d.id))
 }
 
 export async function createMentorshipProgram(data: Omit<MentorshipProgram, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.mentorship), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.mentorship), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateMentorshipProgram(id: string, data: Partial<MentorshipProgram>) {
-  return updateDoc(doc(db, C.mentorship, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.mentorship, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteMentorshipProgram(id: string) {
-  return deleteDoc(doc(db, C.mentorship, id))
+  return deleteDoc(doc(db(), C.mentorship, id))
 }
 
 // ─── Contact messages ─────────────────────────────────────────────────────
 
 export async function getContactMessages(): Promise<ContactMessage[]> {
-  const q = query(collection(db, C.contact), orderBy('createdAt', 'desc'))
+  const q = query(collection(db(), C.contact), orderBy('createdAt', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<ContactMessage>(d.data(), d.id))
 }
 
 export async function createContactMessage(data: Omit<ContactMessage, 'id' | 'createdAt' | 'updatedAt' | 'read' | 'status'>) {
-  return addDoc(collection(db, C.contact), {
+  return addDoc(collection(db(), C.contact), {
     ...data,
     read: false,
     status: 'new',
@@ -411,11 +418,11 @@ export async function createContactMessage(data: Omit<ContactMessage, 'id' | 'cr
 }
 
 export async function markMessageRead(id: string) {
-  return updateDoc(doc(db, C.contact, id), { read: true, status: 'read', updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.contact, id), { read: true, status: 'read', updatedAt: serverTimestamp() })
 }
 
 export async function updateContactStatus(id: string, status: ContactMessage['status']) {
-  return updateDoc(doc(db, C.contact, id), {
+  return updateDoc(doc(db(), C.contact, id), {
     status,
     read: status !== 'new',
     updatedAt: serverTimestamp(),
@@ -423,20 +430,20 @@ export async function updateContactStatus(id: string, status: ContactMessage['st
 }
 
 export async function deleteContactMessage(id: string) {
-  return deleteDoc(doc(db, C.contact, id))
+  return deleteDoc(doc(db(), C.contact, id))
 }
 
 // ─── Site Settings ────────────────────────────────────────────────────────
 
 export async function getSiteSettings(): Promise<SiteSettings | null> {
-  const snap = await getDoc(doc(db, C.siteSettings, 'main'))
+  const snap = await getDoc(doc(db(), C.siteSettings, 'main'))
   if (!snap.exists()) return null
   return mapDoc<SiteSettings>(snap.data(), snap.id)
 }
 
 export async function upsertSiteSettings(data: Omit<SiteSettings, 'id' | 'createdAt' | 'updatedAt'>) {
   await setDoc(
-    doc(db, C.siteSettings, 'main'),
+    doc(db(), C.siteSettings, 'main'),
     { ...data, updatedAt: serverTimestamp() },
     { merge: true }
   )
@@ -445,33 +452,33 @@ export async function upsertSiteSettings(data: Omit<SiteSettings, 'id' | 'create
 // ─── Expertise ────────────────────────────────────────────────────────────
 
 export async function getExpertiseAreas(): Promise<ExpertiseArea[]> {
-  const q = query(collection(db, C.expertise), orderBy('order', 'asc'))
+  const q = query(collection(db(), C.expertise), orderBy('order', 'asc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<ExpertiseArea>(d.data(), d.id))
 }
 
 export async function createExpertiseArea(data: Omit<ExpertiseArea, 'id' | 'createdAt' | 'updatedAt'>) {
-  return addDoc(collection(db, C.expertise), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
+  return addDoc(collection(db(), C.expertise), { ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp() })
 }
 
 export async function updateExpertiseArea(id: string, data: Partial<ExpertiseArea>) {
-  return updateDoc(doc(db, C.expertise, id), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.expertise, id), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteExpertiseArea(id: string) {
-  return deleteDoc(doc(db, C.expertise, id))
+  return deleteDoc(doc(db(), C.expertise, id))
 }
 
 // ─── Admin Users ──────────────────────────────────────────────────────────
 
 export async function getAdminUsers(): Promise<AdminUser[]> {
-  const q = query(collection(db, C.users), orderBy('createdAt', 'desc'))
+  const q = query(collection(db(), C.users), orderBy('createdAt', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<AdminUser>(d.data(), d.id))
 }
 
 export async function getAdminUserByUid(uid: string): Promise<AdminUser | null> {
-  const q = query(collection(db, C.users), where('uid', '==', uid), limit(1))
+  const q = query(collection(db(), C.users), where('uid', '==', uid), limit(1))
   const snap = await getDocs(q)
   if (snap.empty) return null
   return mapDoc<AdminUser>(snap.docs[0].data(), snap.docs[0].id)
@@ -479,7 +486,7 @@ export async function getAdminUserByUid(uid: string): Promise<AdminUser | null> 
 
 export async function createAdminUser(data: Omit<AdminUser, 'id' | 'createdAt' | 'updatedAt'>) {
   // Use uid as document ID so lookups are O(1)
-  await setDoc(doc(db, C.users, data.uid), {
+  await setDoc(doc(db(), C.users, data.uid), {
     ...data,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -487,18 +494,18 @@ export async function createAdminUser(data: Omit<AdminUser, 'id' | 'createdAt' |
 }
 
 export async function updateAdminUser(uid: string, data: Partial<AdminUser>) {
-  return updateDoc(doc(db, C.users, uid), { ...data, updatedAt: serverTimestamp() })
+  return updateDoc(doc(db(), C.users, uid), { ...data, updatedAt: serverTimestamp() })
 }
 
 export async function deleteAdminUser(uid: string) {
-  return deleteDoc(doc(db, C.users, uid))
+  return deleteDoc(doc(db(), C.users, uid))
 }
 
 // ─── Audit Logs ───────────────────────────────────────────────────────────
 
 export async function getAuditLogs(limitCount = 100): Promise<AuditLog[]> {
   const q = query(
-    collection(db, C.auditLogs),
+    collection(db(), C.auditLogs),
     orderBy('timestamp', 'desc'),
     limit(limitCount)
   )
@@ -521,7 +528,7 @@ export async function createAuditLog(data: {
   documentTitle?: string
   details?: string
 }) {
-  return addDoc(collection(db, C.auditLogs), {
+  return addDoc(collection(db(), C.auditLogs), {
     ...data,
     timestamp: serverTimestamp(),
     createdAt: serverTimestamp(),
@@ -554,19 +561,19 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
     albSnap, imgSnap,
     msgSnap, msgUnreadSnap,
   ] = await Promise.all([
-    getCountFromServer(collection(db, C.publications)),
-    getCountFromServer(collection(db, C.patents)),
-    getCountFromServer(collection(db, C.awards)),
-    getCountFromServer(collection(db, C.research)),
-    getCountFromServer(collection(db, C.mentorship)),
-    getCountFromServer(query(collection(db, C.activities), where('status', '==', 'published'))),
-    getCountFromServer(query(collection(db, C.activities), where('status', '==', 'draft'))),
-    getCountFromServer(query(collection(db, C.news), where('published', '==', true))),
-    getCountFromServer(query(collection(db, C.news), where('published', '==', false))),
-    getCountFromServer(collection(db, C.albums)),
-    getCountFromServer(collection(db, C.images)),
-    getCountFromServer(collection(db, C.contact)),
-    getCountFromServer(query(collection(db, C.contact), where('read', '==', false))),
+    getCountFromServer(collection(db(), C.publications)),
+    getCountFromServer(collection(db(), C.patents)),
+    getCountFromServer(collection(db(), C.awards)),
+    getCountFromServer(collection(db(), C.research)),
+    getCountFromServer(collection(db(), C.mentorship)),
+    getCountFromServer(query(collection(db(), C.activities), where('status', '==', 'published'))),
+    getCountFromServer(query(collection(db(), C.activities), where('status', '==', 'draft'))),
+    getCountFromServer(query(collection(db(), C.news), where('published', '==', true))),
+    getCountFromServer(query(collection(db(), C.news), where('published', '==', false))),
+    getCountFromServer(collection(db(), C.albums)),
+    getCountFromServer(collection(db(), C.images)),
+    getCountFromServer(collection(db(), C.contact)),
+    getCountFromServer(query(collection(db(), C.contact), where('read', '==', false))),
   ])
 
   return {
