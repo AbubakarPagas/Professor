@@ -33,7 +33,10 @@ export default function AdminSeoPage() {
   const {
     register, handleSubmit, reset, watch,
     formState: { isSubmitting, isDirty, errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { siteTitle: '', siteDescription: '', siteKeywords: '', ogImage: '', twitterHandle: '' },
+  })
 
   useEffect(() => {
     if (settings) {

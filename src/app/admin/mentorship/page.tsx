@@ -29,7 +29,7 @@ const schema = z.object({
   outcomes: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
   active: z.boolean(),
-  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  order: z.coerce.number().int().min(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -42,7 +42,10 @@ export default function AdminMentorshipPage() {
 
   const {
     register, handleSubmit, reset, formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { title: '', description: '', targetAudience: '', outcomes: '', imageUrl: '', order: 0, active: true },
+  })
 
   const openAdd = () => {
     reset({ active: true, order: data?.length ?? 0 })

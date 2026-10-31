@@ -27,7 +27,7 @@ const schema = z.object({
   altText: z.string().min(1, 'Alt text is required for accessibility'),
   caption: z.string().optional(),
   credit: z.string().optional(),
-  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  order: z.coerce.number().int().min(0),
   featured: z.boolean(),
 })
 type FormData = z.infer<typeof schema>
@@ -44,7 +44,10 @@ export default function AlbumImagesPage({ params }: { params: Promise<{ albumId:
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: { title: '', altText: '', caption: '', credit: '', order: 0, featured: false },
+    })
 
   // Upload multiple files
   const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

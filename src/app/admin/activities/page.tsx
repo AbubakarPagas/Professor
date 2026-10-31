@@ -63,7 +63,13 @@ export default function AdminActivitiesPage() {
   const {
     register, handleSubmit, setValue, watch, reset,
     formState: { isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      title: '', slug: '', summary: '', report: '', date: new Date().toISOString().slice(0, 10),
+      category: 'conference', status: 'draft', featured: false,
+    },
+  })
 
   const openAdd = () => {
     reset({

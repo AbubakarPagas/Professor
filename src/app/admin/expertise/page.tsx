@@ -25,7 +25,7 @@ const schema = z.object({
   title: z.string().min(2, 'Title is required'),
   description: z.string().optional(),
   icon: z.string().optional(),
-  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  order: z.coerce.number().int().min(0),
   active: z.boolean(),
 })
 
@@ -39,7 +39,10 @@ export default function AdminExpertisePage() {
 
   const {
     register, handleSubmit, reset, formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { title: '', description: '', icon: '', order: 0, active: true },
+  })
 
   const openAdd = () => {
     reset({ active: true, order: data?.length ?? 0 })

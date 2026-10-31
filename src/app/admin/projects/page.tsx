@@ -27,7 +27,7 @@ const schema = z.object({
   description: z.string().min(10),
   fundingBody: z.string().optional(),
   fundingAmount: z.string().optional(),
-  startYear: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
+  startYear: z.coerce.number().int().min(1900).max(2100),
   endYear: z.coerce.number().int().min(1900).max(2100).optional()
     .or(z.literal(0)).transform(v => v || undefined),
   status: z.enum(['ongoing', 'completed', 'planned']),
@@ -55,7 +55,10 @@ export default function AdminProjectsPage() {
   const {
     register, handleSubmit, setValue, watch, reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { title: '', description: '', keywords: '', status: 'ongoing', startYear: new Date().getFullYear(), featured: false },
+  })
 
   const openAdd = () => {
     reset({ status: 'ongoing', startYear: new Date().getFullYear(), keywords: '', featured: false })

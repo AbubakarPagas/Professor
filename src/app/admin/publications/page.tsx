@@ -44,16 +44,13 @@ const schema = z.object({
   volume: z.string().optional(),
   issue: z.string().optional(),
   pages: z.string().optional(),
-  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
+  year: z.coerce.number().int().min(1900).max(2100),
   doi: z.string().optional(),
   url: z.string().url().optional().or(z.literal('')),
   abstract: z.string().optional(),
   type: z.enum(['journal', 'conference', 'book', 'book_chapter', 'technical_report', 'thesis']),
   featured: z.boolean(),
-  citations: z.preprocess(
-    v => (v === '' || v === undefined || v === null ? undefined : Number(v)),
-    z.number().int().min(0).optional()
-  ),
+  citations: z.coerce.number().int().min(0).optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -81,7 +78,10 @@ export default function AdminPublicationsPage() {
     watch,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { title: '', authors: '', type: 'journal', year: new Date().getFullYear(), featured: false },
+  })
 
   const openAdd = () => {
     reset({ type: 'journal', featured: false, year: new Date().getFullYear() })

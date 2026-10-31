@@ -26,7 +26,7 @@ const schema = z.object({
   patentNumber: z.string().optional(),
   country: z.string().min(2),
   status: z.enum(['granted', 'pending', 'expired']),
-  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
+  year: z.coerce.number().int().min(1900).max(2100),
   description: z.string().optional(),
   url: z.string().url().optional().or(z.literal('')),
 })
@@ -46,7 +46,10 @@ export default function AdminPatentsPage() {
   const [editing, setEditing] = useState<Patent | null>(null)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: { title: '', inventors: '', country: '', status: 'granted', year: new Date().getFullYear() },
+    })
 
   const openAdd = () => {
     reset({ status: 'granted', year: new Date().getFullYear() })

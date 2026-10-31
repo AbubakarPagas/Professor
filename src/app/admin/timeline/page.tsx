@@ -24,7 +24,7 @@ import { toast } from '@/hooks/use-toast'
 import type { TimelineEntry, TimelineType } from '@/types'
 
 const schema = z.object({
-  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1950).max(2100)),
+  year: z.coerce.number().int().min(1950).max(2100),
   endYear: z.coerce.number().int().min(1950).max(2100).optional()
     .or(z.literal(0)).transform(v => v || undefined),
   title: z.string().min(3),
@@ -32,7 +32,7 @@ const schema = z.object({
   location: z.string().optional(),
   description: z.string().optional(),
   type: z.enum(['education', 'appointment', 'leadership', 'milestone']),
-  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  order: z.coerce.number().int().min(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -52,7 +52,10 @@ export default function AdminTimelinePage() {
   const [editing, setEditing] = useState<TimelineEntry | null>(null)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: { year: new Date().getFullYear(), type: 'appointment', order: 0, title: '', organisation: '' },
+    })
 
   const openAdd = () => {
     reset({ type: 'appointment', year: new Date().getFullYear(), order: data?.length ?? 0 })

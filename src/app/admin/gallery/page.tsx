@@ -43,7 +43,7 @@ const schema = z.object({
   venue: z.string().optional(),
   published: z.boolean(),
   featured: z.boolean(),
-  order: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  order: z.coerce.number().int().min(0),
 })
 type FormData = z.infer<typeof schema>
 
@@ -55,7 +55,10 @@ export default function AdminGalleryPage() {
   const [deleting, setDeleting] = useState<string | null>(null)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: { title: '', slug: '', category: 'conference', order: 0, published: false, featured: false },
+    })
 
   const openAdd = () => {
     reset({ category: 'conference', published: false, featured: false, order: albums?.length ?? 0 })

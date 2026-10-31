@@ -39,7 +39,10 @@ export default function AdminNewsPage() {
   const [editing, setEditing] = useState<NewsItem | null>(null)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: { title: '', slug: '', excerpt: '', body: '', publishedAt: new Date().toISOString().slice(0, 10), published: false },
+    })
 
   const titleValue = watch('title') ?? ''
 

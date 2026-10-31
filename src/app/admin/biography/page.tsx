@@ -36,11 +36,11 @@ const schema = z.object({
   orcid: z.string().optional(),
   fellowships: z.string().optional(),
   areasOfExpertise: z.string().optional(),
-  statsPublications: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
-  statsPatents: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
-  statsAwards: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
-  statsYears: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
-  statsStudents: z.preprocess(v => (v === '' || v === undefined || v === null ? 0 : Number(v)), z.number().int().min(0)).default(0),
+  statsPublications: z.coerce.number().int().min(0),
+  statsPatents: z.coerce.number().int().min(0),
+  statsAwards: z.coerce.number().int().min(0),
+  statsYears: z.coerce.number().int().min(0),
+  statsStudents: z.coerce.number().int().min(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -53,7 +53,13 @@ export default function AdminBiographyPage() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const { register, handleSubmit, reset, formState: { isSubmitting, isDirty } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: {
+        name: '', title: '', bio: '', shortBio: '', tagline: '', fellowships: '', areasOfExpertise: '',
+        statsPublications: 0, statsPatents: 0, statsAwards: 0, statsYears: 0, statsStudents: 0,
+      },
+    })
 
   useEffect(() => {
     if (bio) {

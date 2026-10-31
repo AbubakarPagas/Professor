@@ -29,7 +29,10 @@ export default function AdminLoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: '', password: '' },
+  })
 
   useEffect(() => {
     if (!loading && user && isAdmin) {

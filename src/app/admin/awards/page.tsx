@@ -20,7 +20,7 @@ import type { Award, AwardCategory } from '@/types'
 const schema = z.object({
   title: z.string().min(3),
   organisation: z.string().min(2),
-  year: z.preprocess(v => (v === '' || v === undefined || v === null ? undefined : Number(v)), z.number().int().min(1900).max(2100)),
+  year: z.coerce.number().int().min(1900).max(2100),
   category: z.enum(['national', 'international', 'fellowship', 'recognition', 'academic']),
   description: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
@@ -37,7 +37,10 @@ export default function AdminAwardsPage() {
   const [editing, setEditing] = useState<Award | null>(null)
 
   const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting } } =
-    useForm<FormData>({ resolver: zodResolver(schema) })
+    useForm<FormData>({
+      resolver: zodResolver(schema),
+      defaultValues: { title: '', organisation: '', year: new Date().getFullYear(), category: 'national' },
+    })
 
   const openAdd = () => {
     reset({ category: 'national', year: new Date().getFullYear() })
