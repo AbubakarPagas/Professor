@@ -44,13 +44,13 @@ const schema = z.object({
   volume: z.string().optional(),
   issue: z.string().optional(),
   pages: z.string().optional(),
-  year: z.coerce.number().int().min(1900).max(2100),
+  year: z.number().int().min(1900).max(2100),
   doi: z.string().optional(),
   url: z.string().url().optional().or(z.literal('')),
   abstract: z.string().optional(),
   type: z.enum(['journal', 'conference', 'book', 'book_chapter', 'technical_report', 'thesis']),
   featured: z.boolean(),
-  citations: z.coerce.number().int().min(0).optional(),
+  citations: z.number().int().min(0).optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -245,7 +245,7 @@ export default function AdminPublicationsPage() {
               </div>
               <div>
                 <Label htmlFor="pub-year">Year *</Label>
-                <Input id="pub-year" type="number" {...register('year')} className="mt-1" />
+                <Input id="pub-year" type="number" {...register('year', { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
 

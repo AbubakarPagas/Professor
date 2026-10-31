@@ -36,11 +36,11 @@ const schema = z.object({
   orcid: z.string().optional(),
   fellowships: z.string().optional(),
   areasOfExpertise: z.string().optional(),
-  statsPublications: z.coerce.number().int().min(0),
-  statsPatents: z.coerce.number().int().min(0),
-  statsAwards: z.coerce.number().int().min(0),
-  statsYears: z.coerce.number().int().min(0),
-  statsStudents: z.coerce.number().int().min(0),
+  statsPublications: z.number().int().min(0),
+  statsPatents: z.number().int().min(0),
+  statsAwards: z.number().int().min(0),
+  statsYears: z.number().int().min(0),
+  statsStudents: z.number().int().min(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -309,7 +309,7 @@ export default function AdminBiographyPage() {
               ].map(f => (
                 <div key={f.name}>
                   <Label>{f.label}</Label>
-                  <Input type="number" {...register(f.name as keyof FormData)} className="mt-1" />
+                  <Input type="number" {...register(f.name as keyof FormData, { valueAsNumber: true })} className="mt-1" />
                 </div>
               ))}
             </div>

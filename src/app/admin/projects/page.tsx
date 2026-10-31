@@ -27,9 +27,8 @@ const schema = z.object({
   description: z.string().min(10),
   fundingBody: z.string().optional(),
   fundingAmount: z.string().optional(),
-  startYear: z.coerce.number().int().min(1900).max(2100),
-  endYear: z.coerce.number().int().min(1900).max(2100).optional()
-    .or(z.literal(0)).transform(v => v || undefined),
+  startYear: z.number().int().min(1900).max(2100),
+  endYear: z.number().int().min(1900).max(2100).optional(),
   status: z.enum(['ongoing', 'completed', 'planned']),
   collaborators: z.string().optional(),
   keywords: z.string().min(1),
@@ -73,7 +72,7 @@ export default function AdminProjectsPage() {
       status: r.status ?? 'ongoing',
       keywords: r.keywords.join(', '),
       collaborators: r.collaborators?.join(', ') ?? '',
-      endYear: r.endYear ?? 0,
+      endYear: r.endYear ?? undefined,
       imageUrl: r.imageUrl ?? '',
     })
     setEditing(r)
@@ -238,11 +237,11 @@ export default function AdminProjectsPage() {
               </div>
               <div>
                 <Label>Start Year *</Label>
-                <Input type="number" {...register('startYear')} className="mt-1" />
+                <Input type="number" {...register('startYear', { valueAsNumber: true })} className="mt-1" />
               </div>
               <div>
                 <Label>End Year</Label>
-                <Input type="number" {...register('endYear')} className="mt-1" placeholder="Ongoing" />
+                <Input type="number" {...register('endYear', { setValueAs: v => v === '' || v === 0 ? undefined : Number(v) })} className="mt-1" placeholder="Ongoing" />
               </div>
             </div>
 

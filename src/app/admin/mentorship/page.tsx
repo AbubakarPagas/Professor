@@ -29,7 +29,7 @@ const schema = z.object({
   outcomes: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
   active: z.boolean(),
-  order: z.coerce.number().int().min(0),
+  order: z.number().int().min(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -200,7 +200,7 @@ export default function AdminMentorshipPage() {
               </div>
               <div>
                 <Label>Display Order</Label>
-                <Input type="number" {...register('order')} className="mt-1" />
+                <Input type="number" {...register('order', { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
 

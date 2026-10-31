@@ -26,7 +26,7 @@ const schema = z.object({
   patentNumber: z.string().optional(),
   country: z.string().min(2),
   status: z.enum(['granted', 'pending', 'expired']),
-  year: z.coerce.number().int().min(1900).max(2100),
+  year: z.number().int().min(1900).max(2100),
   description: z.string().optional(),
   url: z.string().url().optional().or(z.literal('')),
 })
@@ -191,7 +191,7 @@ export default function AdminPatentsPage() {
               </div>
               <div>
                 <Label>Year *</Label>
-                <Input type="number" {...register('year')} className="mt-1" />
+                <Input type="number" {...register('year', { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
             <div>

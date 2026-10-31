@@ -24,15 +24,14 @@ import { toast } from '@/hooks/use-toast'
 import type { TimelineEntry, TimelineType } from '@/types'
 
 const schema = z.object({
-  year: z.coerce.number().int().min(1950).max(2100),
-  endYear: z.coerce.number().int().min(1950).max(2100).optional()
-    .or(z.literal(0)).transform(v => v || undefined),
+  year: z.number().int().min(1950).max(2100),
+  endYear: z.number().int().min(1950).max(2100).optional(),
   title: z.string().min(3),
   organisation: z.string().min(2),
   location: z.string().optional(),
   description: z.string().optional(),
   type: z.enum(['education', 'appointment', 'leadership', 'milestone']),
-  order: z.coerce.number().int().min(0),
+  order: z.number().int().min(0),
 })
 
 type FormData = z.infer<typeof schema>
@@ -69,7 +68,7 @@ export default function AdminTimelinePage() {
       year: entry.year ?? new Date().getFullYear(),
       type: entry.type ?? 'appointment',
       order: entry.order ?? 0,
-      endYear: entry.endYear ?? 0,
+      endYear: entry.endYear ?? undefined,
     })
     setEditing(entry)
     setDialogOpen(true)
@@ -215,11 +214,11 @@ export default function AdminTimelinePage() {
               </div>
               <div>
                 <Label htmlFor="tl-year">Start Year *</Label>
-                <Input id="tl-year" type="number" {...register('year')} className="mt-1" />
+                <Input id="tl-year" type="number" {...register('year', { valueAsNumber: true })} className="mt-1" />
               </div>
               <div>
                 <Label htmlFor="tl-endyear">End Year</Label>
-                <Input id="tl-endyear" type="number" {...register('endYear')}
+                <Input id="tl-endyear" type="number" {...register('endYear', { setValueAs: v => v === '' || v === 0 ? undefined : Number(v) })}
                   className="mt-1" placeholder="Leave blank if ongoing" />
               </div>
             </div>
@@ -231,7 +230,7 @@ export default function AdminTimelinePage() {
               </div>
               <div>
                 <Label htmlFor="tl-order">Display Order</Label>
-                <Input id="tl-order" type="number" {...register('order')} className="mt-1" />
+                <Input id="tl-order" type="number" {...register('order', { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
 

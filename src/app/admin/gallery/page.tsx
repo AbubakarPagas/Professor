@@ -43,7 +43,7 @@ const schema = z.object({
   venue: z.string().optional(),
   published: z.boolean(),
   featured: z.boolean(),
-  order: z.coerce.number().int().min(0),
+  order: z.number().int().min(0),
 })
 type FormData = z.infer<typeof schema>
 
@@ -272,7 +272,7 @@ export default function AdminGalleryPage() {
               </div>
               <div>
                 <Label>Display Order</Label>
-                <Input type="number" {...register('order')} className="mt-1" />
+                <Input type="number" {...register('order', { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
             <div>

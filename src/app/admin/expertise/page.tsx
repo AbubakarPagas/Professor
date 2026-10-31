@@ -25,7 +25,7 @@ const schema = z.object({
   title: z.string().min(2, 'Title is required'),
   description: z.string().optional(),
   icon: z.string().optional(),
-  order: z.coerce.number().int().min(0),
+  order: z.number().int().min(0),
   active: z.boolean(),
 })
 
@@ -187,7 +187,7 @@ export default function AdminExpertisePage() {
               </div>
               <div>
                 <Label htmlFor="exp-order">Display Order</Label>
-                <Input id="exp-order" type="number" {...register('order')} className="mt-1" />
+                <Input id="exp-order" type="number" {...register('order', { valueAsNumber: true })} className="mt-1" />
               </div>
             </div>
 

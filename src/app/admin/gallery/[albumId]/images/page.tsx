@@ -27,7 +27,7 @@ const schema = z.object({
   altText: z.string().min(1, 'Alt text is required for accessibility'),
   caption: z.string().optional(),
   credit: z.string().optional(),
-  order: z.coerce.number().int().min(0),
+  order: z.number().int().min(0),
   featured: z.boolean(),
 })
 type FormData = z.infer<typeof schema>
@@ -252,7 +252,7 @@ export default function AlbumImagesPage({ params }: { params: Promise<{ albumId:
                 </div>
                 <div>
                   <Label>Order</Label>
-                  <Input type="number" {...register('order')} className="mt-1" />
+                  <Input type="number" {...register('order', { valueAsNumber: true })} className="mt-1" />
                 </div>
               </div>
               <div className="flex items-center gap-2">
