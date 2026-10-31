@@ -1,16 +1,14 @@
 /**
- * Next.js Edge Middleware — server-side admin route protection.
+ * Next.js 16 Proxy — server-side admin route protection.
+ * (Renamed from middleware.ts — Next.js 16 uses the "proxy" convention)
  *
  * This adds a first layer of defence at the edge: admin routes will
  * return a redirect to /admin/login for any request that does not
  * carry a Firebase session cookie.
  *
  * NOTE: Full authorisation is enforced by Firestore Security Rules.
- * This middleware prevents direct URL access only and is NOT a
- * substitute for server-side Firebase token verification on sensitive
- * write operations.
- *
- * The login page itself and static assets are explicitly allowed through.
+ * This proxy prevents direct URL access only and is NOT a substitute
+ * for server-side Firebase token verification on sensitive write operations.
  */
 
 import { type NextRequest, NextResponse } from 'next/server'
@@ -18,7 +16,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 // Public paths within /admin that must not be protected
 const PUBLIC_ADMIN_PATHS = ['/admin/login']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Only intercept /admin routes
@@ -26,18 +24,15 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Allow the login page and Next.js internals
+  // Allow the login page through
   if (PUBLIC_ADMIN_PATHS.some(p => pathname.startsWith(p))) {
     return NextResponse.next()
   }
 
-  // Check for Firebase session cookie (__session is the standard name
-  // used by Firebase Hosting / SDKs; adjust the cookie name if you
-  // implement custom session cookies via Firebase Admin SDK).
-  //
+  // Check for Firebase session cookie.
   // Because the Firebase JS SDK stores tokens in IndexedDB (not cookies)
-  // by default, we fall back to checking a lightweight "auth-token"
-  // cookie that the client sets after login via a custom hook.
+  // by default, we check a lightweight "auth-token" cookie that the client
+  // sets after login via use-auth-cookie.ts.
   const sessionCookie =
     request.cookies.get('__session')?.value ||
     request.cookies.get('auth-token')?.value
