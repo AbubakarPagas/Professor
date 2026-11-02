@@ -32,7 +32,7 @@ export function MentorshipHomeSection({ programs, profile }: MentorshipHomeSecti
             <h2 id="mentorship-home-heading" className="font-serif text-display-md text-white mt-1 mb-3 leading-tight">Shaping the Next Generation of Engineers</h2>
             <div className="h-[2px] w-10 bg-gradient-to-r from-gold-400 to-gold-300 mb-7 rounded-full" aria-hidden="true" />
             <p className="text-white/50 leading-[1.85] text-[15px] mb-10">
-              Beyond research and leadership, {profile?.name ?? 'Professor Dauda'} is deeply committed to mentoring engineers, innovators, and entrepreneurs who will carry Nigeria's engineering legacy forward.
+              Beyond research and leadership, {profile?.name ?? 'Professor Dauda'} is deeply committed to mentoring engineers, innovators, and entrepreneurs who will carry Nigeria&apos;s engineering legacy forward.
             </p>
             <div className="flex flex-wrap gap-3">
               <Button asChild variant="gold" size="lg" className="shadow-gold">

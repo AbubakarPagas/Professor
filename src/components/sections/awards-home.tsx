@@ -50,7 +50,7 @@ export function AwardsHomeSection({ awards, totalCount }: AwardsHomeSectionProps
               </div>
               <div className="p-5 rounded-xl border border-ivory-300 bg-white text-center shadow-card">
                 <p className="font-serif font-bold text-navy-800 text-3xl mb-1">{fellowshipCount > 0 ? fellowshipCount : '—'}</p>
-                <p className="text-xs text-charcoal/50 uppercase tracking-widest">Fellowships &amp; Int'l</p>
+                <p className="text-xs text-charcoal/50 uppercase tracking-widest">Fellowships &amp; Int&apos;l</p>
               </div>
             </div>
 

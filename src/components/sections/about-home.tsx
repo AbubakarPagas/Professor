@@ -47,7 +47,7 @@ export function AboutHomeSection({ profile, expertise }: AboutHomeSectionProps) 
                   {name}, FNSE, FNIMechE, MASME is a distinguished mechanical engineer and academic leader whose career spans research, teaching, policy, and institutional leadership at the highest levels in Nigeria.
                 </p>
                 <p className="text-charcoal/75 leading-[1.85] mb-8 text-[15px]">
-                  As Director-General at NASENI, he established AMTDI — the Advanced Manufacturing Technology Development Institute — driving Nigeria's industrial self-sufficiency agenda.
+                  As Director-General at NASENI, he established AMTDI — the Advanced Manufacturing Technology Development Institute — driving Nigeria&apos;s industrial self-sufficiency agenda.
                 </p>
               </>
             )}
