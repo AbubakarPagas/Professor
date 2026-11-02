@@ -79,7 +79,7 @@ export default function AdminSeedPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold font-serif text-navy-800">Database Seed</h1>
-          <p className="text-xs text-charcoal/50">Push all of Prof. Dauda's information to Firestore in one click</p>
+          <p className="text-xs text-charcoal/50">Push all of Prof. Dauda&apos;s information to Firestore in one click</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export default function AdminSeedPage() {
           <p className="text-blue-700/80 text-[13px] leading-relaxed">
             This tool writes <strong>{TOTAL_DOCS} documents</strong> across 11 Firestore collections.
             Collections that already have data are <strong>skipped by default</strong> to avoid duplicates.
-            Enable <strong>"Overwrite existing"</strong> to replace everything.
+            Enable <strong>&ldquo;Overwrite existing&rdquo;</strong> to replace everything.
             The profile and site settings are always merged (safe to re-run).
           </p>
         </div>
