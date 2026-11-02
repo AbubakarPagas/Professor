@@ -1,10 +1,14 @@
+import type { Metadata } from 'next'
 import { Navbar } from '@/components/layout/navbar'
-import { Footer } from '@/components/layout/footer'
-import { getSiteProfile } from '@/lib/firestore'
+import { FooterWrapper } from '@/components/layout/footer-wrapper'
 
-export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const profile = await getSiteProfile().catch(() => null)
+export const metadata: Metadata = {
+  title: 'Home',
+  description:
+    'Official website of Professor Mohammed Dauda, FNSE, FNIMechE, MASME — distinguished mechanical engineer, academic leader, researcher, and innovator.',
+}
 
+export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-ivory-100">
       <Navbar />
@@ -17,7 +21,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <main id="main-content" className="flex-1 pt-[63px]" tabIndex={-1}>
         {children}
       </main>
-      <Footer profile={profile} />
+      <FooterWrapper />
     </div>
   )
 }

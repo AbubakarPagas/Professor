@@ -1,4 +1,7 @@
+'use client'
+
 import type { Metadata } from 'next'
+import { useMemo } from 'react'
 import { HeroSection } from '@/components/sections/hero'
 import { AboutHomeSection } from '@/components/sections/about-home'
 import { TimelineHomeSection } from '@/components/sections/timeline-home'
@@ -10,6 +13,7 @@ import { GalleryHomeSection } from '@/components/sections/gallery-home'
 import { NewsHomeSection } from '@/components/sections/news-home'
 import { MentorshipHomeSection } from '@/components/sections/mentorship-home'
 import { ContactHomeSection } from '@/components/sections/contact-home'
+import { useFirestoreData } from '@/hooks/use-firestore'
 import {
   getSiteProfile,
   getExpertiseAreas,
@@ -23,61 +27,52 @@ import {
   getMentorshipPrograms,
 } from '@/lib/firestore'
 
-export const metadata: Metadata = {
-  title: 'Home',
-  description:
-    'Official website of Professor Mohammed Dauda, FNSE, FNIMechE, MASME — distinguished mechanical engineer, academic leader, researcher, and innovator.',
-}
+// Note: metadata export is not supported in client components.
+// Page-level metadata is set in the nearest server layout instead.
 
-export default async function HomePage() {
-  // Fetch all data in parallel — any individual failure falls back gracefully
-  const [
-    profile,
-    expertise,
-    timeline,
-    featuredResearch,
-    allProjects,
-    awards,
-    activities,
-    galleryImages,
-    newsItems,
-    mentorshipPrograms,
-  ] = await Promise.all([
-    getSiteProfile().catch(() => null),
-    getExpertiseAreas().catch(() => []),
-    getTimeline().catch(() => []),
-    getFeaturedResearch(6).catch(() => []),
-    getResearchProjects().catch(() => []),
-    getAwards().catch(() => []),
-    getFeaturedActivities(3).catch(() => []),
-    getFeaturedImages(6).catch(() => []),
-    getNewsItems(true).catch(() => []),
-    getMentorshipPrograms().catch(() => []),
-  ])
+export default function HomePage() {
+  const { data: profile }            = useFirestoreData(getSiteProfile)
+  const { data: expertise }          = useFirestoreData(getExpertiseAreas)
+  const { data: timeline }           = useFirestoreData(getTimeline)
+  const { data: featuredResearch }   = useFirestoreData(() => getFeaturedResearch(6))
+  const { data: allProjects }        = useFirestoreData(getResearchProjects)
+  const { data: awards }             = useFirestoreData(getAwards)
+  const { data: activities }         = useFirestoreData(() => getFeaturedActivities(3))
+  const { data: galleryImages }      = useFirestoreData(() => getFeaturedImages(6))
+  const { data: newsItems }          = useFirestoreData(() => getNewsItems(true))
+  const { data: mentorshipPrograms } = useFirestoreData(getMentorshipPrograms)
 
   // Projects: prefer featured ones, fall back to all
-  const featuredProjects = allProjects.filter(p => p.featured).slice(0, 4)
-  const projectsToShow   = featuredProjects.length > 0 ? featuredProjects : allProjects.slice(0, 4)
+  const projectsToShow = useMemo(() => {
+    const all = allProjects ?? []
+    const featured = all.filter(p => p.featured).slice(0, 4)
+    return featured.length > 0 ? featured : all.slice(0, 4)
+  }, [allProjects])
 
   // Research: prefer featured, fall back to all projects slice
-  const researchToShow = featuredResearch.length > 0 ? featuredResearch : allProjects.slice(0, 6)
+  const researchToShow = useMemo(() => {
+    const featured = featuredResearch ?? []
+    return featured.length > 0 ? featured : (allProjects ?? []).slice(0, 6)
+  }, [featuredResearch, allProjects])
 
   // Awards: sort by year desc, show up to 4
-  const awardsToShow = awards.sort((a, b) => b.year - a.year).slice(0, 4)
+  const awardsToShow = useMemo(() => {
+    return [...(awards ?? [])].sort((a, b) => b.year - a.year).slice(0, 4)
+  }, [awards])
 
   return (
     <>
-      <HeroSection profile={profile} />
-      <AboutHomeSection profile={profile} expertise={expertise} />
-      <TimelineHomeSection entries={timeline} />
+      <HeroSection profile={profile ?? null} />
+      <AboutHomeSection profile={profile ?? null} expertise={expertise ?? []} />
+      <TimelineHomeSection entries={timeline ?? []} />
       <ResearchHomeSection projects={researchToShow} />
       <ProjectsHomeSection projects={projectsToShow} />
-      <AwardsHomeSection awards={awardsToShow} totalCount={awards.length} />
-      <ActivitiesHomeSection activities={activities} />
-      <GalleryHomeSection images={galleryImages} />
-      <NewsHomeSection newsItems={newsItems} />
-      <MentorshipHomeSection programs={mentorshipPrograms} profile={profile} />
-      <ContactHomeSection profile={profile} />
+      <AwardsHomeSection awards={awardsToShow} totalCount={awards?.length ?? 0} />
+      <ActivitiesHomeSection activities={activities ?? []} />
+      <GalleryHomeSection images={galleryImages ?? []} />
+      <NewsHomeSection newsItems={newsItems ?? []} />
+      <MentorshipHomeSection programs={mentorshipPrograms ?? []} profile={profile ?? null} />
+      <ContactHomeSection profile={profile ?? null} />
     </>
   )
 }

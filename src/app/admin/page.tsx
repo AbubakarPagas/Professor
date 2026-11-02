@@ -74,12 +74,12 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="font-serif font-bold text-navy-800 text-2xl">Dashboard</h1>
-        <p className="text-sm text-charcoal/50 mt-1">
+        <span className="text-sm text-charcoal/50 mt-1 block">
           Welcome back, <span className="font-medium">{user?.email}</span>
           {role && (
             <Badge variant="outline" className="ml-2 text-[10px] capitalize">{role}</Badge>
           )}
-        </p>
+        </span>
       </div>
 
       {/* Stats row */}

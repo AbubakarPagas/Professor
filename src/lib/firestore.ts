@@ -124,7 +124,7 @@ export const upsertBiography = upsertSiteProfile
 // ─── Timeline ─────────────────────────────────────────────────────────────
 
 export async function getTimeline(): Promise<TimelineEntry[]> {
-  const q = query(collection(db(), C.timeline), orderBy('year', 'desc'), orderBy('order', 'asc'))
+  const q = query(collection(db(), C.timeline), orderBy('year', 'desc'))
   const snap = await getDocs(q)
   return snap.docs.map(d => mapDoc<TimelineEntry>(d.data(), d.id))
 }
