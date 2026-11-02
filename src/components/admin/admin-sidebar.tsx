@@ -8,7 +8,7 @@ import {
   Images, Newspaper, Microscope, Mail,
   UserCircle, LogOut, Menu, X, CalendarDays,
   Users, Settings, BarChart3, FlaskConical, GraduationCap,
-  Briefcase, Clock, Shield,
+  Briefcase, Clock, Shield, Database,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -62,6 +62,7 @@ const NAV_GROUPS = [
       { icon: BarChart3,      label: 'SEO Settings',  href: '/admin/seo' },
       { icon: Users,          label: 'Administrators', href: '/admin/users' },
       { icon: Shield,         label: 'Audit Log',     href: '/admin/audit' },
+      { icon: Database,       label: 'Seed Data',     href: '/admin/seed' },
     ],
   },
 ]

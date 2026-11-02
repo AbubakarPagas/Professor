@@ -5,7 +5,7 @@ import {
   BookOpen, Lightbulb, Trophy, Images, Newspaper,
   Microscope, Mail, UserCircle, CalendarDays,
   Clock, FlaskConical, Briefcase, GraduationCap,
-  Users, Settings, BarChart3, Shield,
+  Users, Settings, BarChart3, Shield, Database,
   TrendingUp, AlertCircle,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -61,6 +61,7 @@ const SECTIONS = [
   { icon: BarChart3,      title: 'SEO Settings',    desc: 'Metadata & search optimisation',       href: '/admin/seo',          colour: 'bg-violet-50 text-violet-600' },
   { icon: Users,          title: 'Administrators',  desc: 'User accounts & roles',                href: '/admin/users',        colour: 'bg-pink-50 text-pink-600' },
   { icon: Shield,         title: 'Audit Log',       desc: 'Administrative change history',        href: '/admin/audit',        colour: 'bg-red-50 text-red-600' },
+  { icon: Database,       title: 'Seed Data',       desc: 'Push all info to Firestore',           href: '/admin/seed',         colour: 'bg-emerald-50 text-emerald-700' },
 ]
 
 export default function AdminDashboard() {
