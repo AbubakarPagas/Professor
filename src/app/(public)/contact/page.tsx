@@ -13,8 +13,8 @@ const CONTACT_ITEMS = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'contact@profdauda.com',
-    href: 'mailto:contact@profdauda.com',
+    value: 'contact@mohammeddauda.com',
+    href: 'mailto:contact@mohammeddauda.com',
   },
   {
     icon: MapPin,

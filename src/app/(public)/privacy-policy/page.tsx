@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
 
             <p className="lead text-charcoal/75">
               This privacy policy explains how the official website of Professor Mohammed Dauda
-              (<strong>profdauda.com</strong>) handles any personal information you provide.
+              (<strong>mohammeddauda.com</strong>) handles any personal information you provide.
               This site is operated solely for informational and professional purposes.
             </p>
 
@@ -47,13 +47,13 @@ export default function PrivacyPolicyPage() {
             <p>This website may contain links to external academic profiles (Google Scholar, ResearchGate, ORCID, LinkedIn). We are not responsible for the privacy practices of those platforms.</p>
 
             <h2>Your Rights</h2>
-            <p>You may request deletion of any personal data you submitted via the contact form by emailing <a href="mailto:contact@profdauda.com">contact@profdauda.com</a>. Requests will be honoured within 30 days.</p>
+            <p>You may request deletion of any personal data you submitted via the contact form by emailing <a href="mailto:contact@mohammeddauda.com">contact@mohammeddauda.com</a>. Requests will be honoured within 30 days.</p>
 
             <h2>Changes to This Policy</h2>
             <p>This policy may be updated periodically. The &ldquo;last updated&rdquo; date at the top of this page will reflect any changes.</p>
 
             <h2>Contact</h2>
-            <p>For questions regarding this privacy policy, please contact us at <a href="mailto:contact@profdauda.com">contact@profdauda.com</a>.</p>
+            <p>For questions regarding this privacy policy, please contact us at <a href="mailto:contact@mohammeddauda.com">contact@mohammeddauda.com</a>.</p>
           </div>
         </div>
       </div>

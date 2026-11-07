@@ -13,7 +13,7 @@
 
 import type { MetadataRoute } from 'next'
 
-const BASE       = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://profdauda.com').replace(/\/$/, '')
+const BASE       = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://mohammeddauda.com').replace(/\/$/, '')
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? ''
 
 // ─── Firestore REST helper ────────────────────────────────────────────────────

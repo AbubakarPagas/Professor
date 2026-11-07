@@ -8,7 +8,7 @@ interface ContactHomeSectionProps {
 }
 
 export function ContactHomeSection({ profile }: ContactHomeSectionProps) {
-  const email    = profile?.email ?? 'contact@profdauda.com'
+  const email    = profile?.email ?? 'contact@mohammeddauda.com'
   const address  = profile?.address ?? profile?.institution ?? 'Nigeria'
 
   const PROFILES = [

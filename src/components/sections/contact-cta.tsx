@@ -35,7 +35,7 @@ export function ContactCTASection() {
               size="lg"
               className="border-white/40 text-white hover:bg-white/10 hover:border-white/60"
             >
-              <a href="mailto:contact@profdauda.com">
+              <a href="mailto:contact@mohammeddauda.com">
                 <Mail className="mr-2 h-4 w-4" aria-hidden="true" />
                 Email Directly
               </a>
