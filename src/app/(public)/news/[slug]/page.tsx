@@ -41,17 +41,19 @@ export default async function NewsArticlePage({ params }: Props) {
   if (!article || !article.published) notFound()
 
   return (
-    <div className="min-h-screen bg-ivory-100">
-      <div className="bg-navy-700 pt-[59px]">
-        <div className="container py-8">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f8f6f0 0%, #f0ece3 50%, #ebe6da 100%)' }}>
+      <div className="relative bg-navy-900 pt-[62px] overflow-hidden">
+        <div className="absolute inset-0 bg-mesh-dark" aria-hidden="true" />
+        <div className="absolute inset-0 pattern-circuit opacity-50" aria-hidden="true" />
+        <div className="container relative py-10">
           <Button asChild variant="ghost" size="sm"
-            className="text-white/60 hover:text-white hover:bg-white/10 mb-4">
+            className="text-white/60 hover:text-white hover:bg-white/10 mb-5 -ml-2">
             <Link href="/news">
               <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden="true" /> Back to News
             </Link>
           </Button>
           <div className="flex items-center gap-2 text-xs text-white/50 mb-3">
-            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+            <Calendar className="h-3.5 w-3.5 text-gold-400" aria-hidden="true" />
             <time dateTime={article.publishedAt?.toISOString()}>{formatDate(article.publishedAt)}</time>
             {article.author && <span>· {article.author}</span>}
           </div>
@@ -59,7 +61,7 @@ export default async function NewsArticlePage({ params }: Props) {
             {article.title}
           </h1>
           {article.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-2 mt-4">
               {article.tags.map(tag => (
                 <Badge key={tag} variant="secondary" className="text-[11px]">
                   <Tag className="h-2.5 w-2.5 mr-1" aria-hidden="true" />{tag}
@@ -67,12 +69,13 @@ export default async function NewsArticlePage({ params }: Props) {
               ))}
             </div>
           )}
+          <div className="mt-7 h-[2px] w-14 bg-gradient-to-r from-gold-400 to-transparent rounded-full" aria-hidden="true" />
         </div>
       </div>
 
-      <div className="container py-12 max-w-3xl">
+      <div className="container py-14 max-w-3xl">
         {article.coverImageUrl && (
-          <div className="relative h-72 sm:h-96 rounded-xl overflow-hidden mb-8 shadow-card">
+          <div className="relative h-72 sm:h-96 rounded-2xl overflow-hidden mb-10 shadow-card-hover">
             <Image
               src={article.coverImageUrl}
               alt={article.title}
@@ -83,7 +86,7 @@ export default async function NewsArticlePage({ params }: Props) {
             />
           </div>
         )}
-        <p className="text-lg text-charcoal/75 leading-relaxed mb-8 border-l-4 border-gold-400 pl-5 font-medium">
+        <p className="text-[17px] text-charcoal/80 leading-[1.9] mb-8 border-l-[3px] border-gold-400 pl-6 font-medium">
           {article.excerpt}
         </p>
         <div

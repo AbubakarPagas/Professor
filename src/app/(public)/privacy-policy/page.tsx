@@ -14,8 +14,9 @@ export default function PrivacyPolicyPage() {
         title="Privacy Policy"
         description="How this website collects, uses, and protects your personal information."
       />
-      <div className="bg-white">
-        <div className="container py-16 max-w-3xl">
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #ffffff 0%, #fdfcf8 60%, #f9f7f2 100%)' }}>
+        <div className="absolute inset-0 pattern-crosshatch" aria-hidden="true" />
+        <div className="container relative py-16 max-w-3xl">
           <div className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:text-navy-700">
 
             <p className="lead text-charcoal/75">

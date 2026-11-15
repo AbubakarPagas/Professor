@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-ivory-100">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
       <a
         href="#main-content"

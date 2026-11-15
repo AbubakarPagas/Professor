@@ -5,47 +5,31 @@
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Backgrounds */
-    --background:    40 27% 96%;          /* ivory #F7F5F0 */
-    --foreground:    218 20% 18%;         /* charcoal #242B36 */
-
-    /* Card */
+    --background:    40 27% 96%;
+    --foreground:    218 20% 18%;
     --card:          0 0% 100%;
     --card-foreground: 218 20% 18%;
-
-    /* Popover */
     --popover:       0 0% 100%;
     --popover-foreground: 218 20% 18%;
-
-    /* Primary — deep navy */
-    --primary:       220 51% 13%;         /* #101C32 */
+    --primary:       220 51% 13%;
     --primary-foreground: 40 27% 96%;
-
-    /* Secondary — warm ivory (interactive) */
     --secondary:     40 20% 93%;
     --secondary-foreground: 220 51% 13%;
-
-    /* Muted */
     --muted:         40 18% 90%;
     --muted-foreground: 220 12% 46%;
-
-    /* Accent — muted gold */
-    --accent:        38 48% 56%;          /* #C5A15A */
+    --accent:        38 48% 56%;
     --accent-foreground: 0 0% 100%;
-
-    /* Destructive */
     --destructive:   0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-
-    /* Borders & inputs */
     --border:        40 15% 86%;
     --input:         40 15% 86%;
     --ring:          220 51% 13%;
-
-    /* Border radius */
     --radius:        0.5rem;
   }
 }
+
+/* ─── SVG data URIs for textures ────────────────────────────────────────── */
+/* Intentionally kept minimal — patterns applied via utility classes in CSS */
 
 /* ─── Base styles ───────────────────────────────────────────────────────── */
 @layer base {
@@ -55,10 +39,26 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Full-page ambient gradient — visible at section edges & in gaps */
+    background: linear-gradient(
+      180deg,
+      #0D1829 0%,       /* deep navy at very top */
+      #101C32 8%,       /* slightly lighter navy */
+      #1a2540 15%,      /* midnight blue */
+      #2a3550 22%,      /* dark slate */
+      #3a4055 30%,      /* transition zone */
+      #c8bfa8 45%,      /* warm sand mid-point */
+      #EAE5D9 60%,      /* ivory */
+      #F0EBE0 75%,      /* warm ivory */
+      #EDE8DC 100%      /* ivory-200 at bottom */
+    );
+    min-height: 100vh;
   }
 
+  /* ── Site-wide background ── */
   body {
-    @apply bg-ivory-100 text-charcoal font-sans leading-relaxed;
+    @apply text-charcoal font-sans leading-relaxed;
+    background: transparent; /* body is transparent — html gradient shows through */
   }
 
   h1, h2, h3 { @apply font-serif; }
@@ -80,7 +80,7 @@
   .section { @apply py-section; }
   .section-sm { @apply py-section-sm; }
 
-  /* Section header pattern */
+  /* ── Section header pattern ── */
   .section-label {
     @apply inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase text-gold-500 mb-4;
   }
@@ -98,25 +98,59 @@
     @apply h-[2px] w-10 bg-gradient-to-r from-gold-400 to-gold-200 rounded-full;
   }
 
-  /* Card base */
+  /* ── Section backgrounds ── */
+
+  /* Light sections — bright white, full opacity (covers html gradient) */
+  .section-light {
+    position: relative;
+    background-color: #ffffff;
+  }
+
+  /* Warm ivory sections — slightly translucent to let the depth show at edges */
+  .section-ivory {
+    position: relative;
+    background: linear-gradient(160deg, #f9f7f2 0%, #f2ede4 50%, #ede7db 100%);
+  }
+
+  /* Shared fine grid overlay on light sections */
+  .section-light::after,
+  .section-ivory::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(13,24,41,0.015) 0px,
+      rgba(13,24,41,0.015) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Card base ── */
   .card-base {
-    @apply bg-white border border-ivory-200 rounded-xl shadow-card transition-all duration-300;
+    background-color: #ffffff;
+    background-image: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(253,252,249,1) 100%);
+    @apply border border-ivory-200 rounded-xl shadow-card transition-all duration-300;
   }
   .card-base:hover {
     @apply shadow-card-hover border-gold-200;
+    background-image: linear-gradient(135deg, #ffffff 0%, #fefdf9 100%);
   }
 
-  /* Body link */
+  /* ── Body link ── */
   .body-link {
     @apply text-navy-700 underline decoration-gold-300/60 underline-offset-2 hover:text-gold-600 hover:decoration-gold-400 transition-colors;
   }
 
-  /* Badge pill */
+  /* ── Badge pill ── */
   .pill {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
 
-  /* Prose overrides */
+  /* ── Prose overrides ── */
   .prose-brand {
     @apply prose prose-slate max-w-none;
   }
@@ -128,15 +162,145 @@
   .prose-brand a { @apply text-gold-600 no-underline hover:underline; }
   .prose-brand strong { @apply text-navy-800; }
 
-  /* Noise texture overlay */
-  .noise-overlay {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  }
-
-  /* Gradient text */
+  /* ── Gradient text ── */
   .text-gradient-gold {
     @apply bg-gradient-to-r from-gold-300 via-gold-400 to-gold-500 bg-clip-text text-transparent;
   }
+
+  /* ── Noise overlay utility (apply over any background) ── */
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(13,24,41,0.015) 0px,
+      rgba(13,24,41,0.015) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  /* ── Dark section backgrounds ── */
+
+  /* Primary dark mesh — hero, mentorship, projects sections */
+  .bg-mesh-dark {
+    background-color: #070E1A;
+    background-image:
+      radial-gradient(ellipse 60% 50% at 20% 50%, rgba(197,161,90,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 70% at 80% 20%, rgba(13,24,41,0.95) 0%, transparent 70%),
+      radial-gradient(ellipse 80% 40% at 50% 100%, rgba(197,161,90,0.05) 0%, transparent 60%);
+  }
+
+  /* ── Circuit / grid patterns ── */
+  .pattern-circuit {
+    background-image:
+      linear-gradient(rgba(197,161,90,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(197,161,90,0.045) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .pattern-diagonal {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(13,24,41,0.025) 0px,
+      rgba(13,24,41,0.025) 1px,
+      transparent 1px,
+      transparent 10px
+    );
+  }
+
+  /* Subtle dot grid for dark sections */
+  .pattern-dots {
+    background-image: radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Fine crosshatch for light sections */
+  .pattern-crosshatch {
+    background-image:
+      linear-gradient(rgba(13,24,41,0.022) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(13,24,41,0.022) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Radial gradient utility */
+  .bg-gradient-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+
+  /* ── Portrait glow ring ── */
+  .ring-glow-gold {
+    box-shadow:
+      0 0 0 2px rgba(197,161,90,0.5),
+      0 0 60px rgba(197,161,90,0.18),
+      0 0 120px rgba(197,161,90,0.08);
+  }
+
+  /* ── Gradient border ── */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(197,161,90,0.6), rgba(197,161,90,0.1));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* ── Stat number styling ── */
+  .stat-number {
+    @apply font-serif font-bold leading-none tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  /* ── Keyframe animations ── */
+
+  /* Used by navbar/footer gold top bar (inline style animation: 'shimmer') */
+  @keyframes shimmer {
+    from { background-position: -200% center; }
+    to   { background-position:  200% center; }
+  }
+
+  @keyframes shimmer-line {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+  }
+  .gold-shimmer {
+    background: linear-gradient(90deg, transparent 0%, #C5A15A 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-12px); }
+  }
+  .animate-float { animation: float 6s ease-in-out infinite; }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .animate-spin-slow { animation: spin-slow 20s linear infinite; }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 1; }
+  }
+  .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
 }
 
 /* ─── Print ─────────────────────────────────────────────────────────────── */

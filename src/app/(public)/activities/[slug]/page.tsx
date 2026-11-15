@@ -49,12 +49,14 @@ export default async function ActivityDetailPage({ params }: Props) {
   if (!activity || activity.status !== 'published') notFound()
 
   return (
-    <div className="bg-ivory-100 min-h-screen">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f8f6f0 0%, #f0ece3 50%, #ebe6da 100%)' }}>
       {/* Nav header */}
-      <div className="bg-navy-700 pt-[59px]">
-        <div className="container py-8">
+      <div className="relative bg-navy-900 pt-[62px] overflow-hidden">
+        <div className="absolute inset-0 bg-mesh-dark" aria-hidden="true" />
+        <div className="absolute inset-0 pattern-circuit opacity-50" aria-hidden="true" />
+        <div className="container relative py-10">
           <Button asChild variant="ghost" size="sm"
-            className="text-white/60 hover:text-white hover:bg-white/10 mb-4">
+            className="text-white/60 hover:text-white hover:bg-white/10 mb-5 -ml-2">
             <Link href="/activities">
               <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden="true" /> Back to Activities
             </Link>
@@ -63,38 +65,39 @@ export default async function ActivityDetailPage({ params }: Props) {
             <Badge variant="gold" className="text-[11px]">{CAT_LABEL[activity.category]}</Badge>
             {activity.featured && <Badge variant="secondary" className="text-[11px]">Featured</Badge>}
           </div>
-          <h1 className="font-serif font-bold text-white text-2xl sm:text-3xl leading-snug mb-3 max-w-3xl">
+          <h1 className="font-serif font-bold text-white text-2xl sm:text-3xl leading-snug mb-4 max-w-3xl">
             {activity.title}
           </h1>
           <div className="flex flex-wrap gap-4 text-xs text-white/50">
             <span className="flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
+              <Calendar className="h-3.5 w-3.5 text-gold-400" aria-hidden="true" />
               {formatDate(activity.date)}
               {activity.endDate && ` – ${formatDate(activity.endDate)}`}
             </span>
             {activity.venue && (
               <span className="flex items-center gap-1.5">
-                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                <MapPin className="h-3.5 w-3.5 text-gold-400" aria-hidden="true" />
                 {activity.venue}
               </span>
             )}
             {activity.organisingInstitution && (
               <span className="flex items-center gap-1.5">
-                <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <Building2 className="h-3.5 w-3.5 text-gold-400" aria-hidden="true" />
                 {activity.organisingInstitution}
               </span>
             )}
           </div>
+          <div className="mt-7 h-[2px] w-14 bg-gradient-to-r from-gold-400 to-transparent rounded-full" aria-hidden="true" />
         </div>
       </div>
 
-      <div className="container py-12">
+      <div className="container py-14">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
 
           {/* Main content */}
           <div className="lg:col-span-2">
             {activity.coverImageUrl && (
-              <div className="relative h-72 sm:h-96 rounded-xl overflow-hidden mb-8 shadow-card">
+              <div className="relative h-72 sm:h-96 rounded-2xl overflow-hidden mb-8 shadow-card-hover">
                 <Image
                   src={activity.coverImageUrl}
                   alt={activity.title}

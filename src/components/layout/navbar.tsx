@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X, ChevronDown, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const NAV_LINKS = [
   { label: 'About',        href: '/about' },
@@ -39,7 +40,6 @@ export function Navbar() {
 
   useEffect(() => { setMobileOpen(false); setMoreOpen(false) }, [pathname])
 
-  // Close More dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
@@ -58,19 +58,24 @@ export function Navbar() {
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-500',
         scrolled
-          ? 'bg-navy-800/98 backdrop-blur-md shadow-[0_2px_24px_rgba(13,24,41,0.35)]'
-          : 'bg-navy-800'
+          ? 'bg-navy-900/95 backdrop-blur-xl shadow-[0_4px_32px_rgba(0,0,0,0.4)] border-b border-white/[0.06]'
+          : 'bg-gradient-to-b from-navy-900 to-navy-900/98'
       )}
       role="banner"
     >
-      {/* Gradient gold top accent */}
+      {/* Animated gradient top bar */}
       <div
-        className="h-[3px] w-full bg-gradient-to-r from-gold-600 via-gold-400 to-gold-300"
+        className="h-[2px] w-full"
+        style={{
+          background: 'linear-gradient(90deg, #8A6931 0%, #C5A15A 30%, #DBBE6B 50%, #C5A15A 70%, #8A6931 100%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 4s ease-in-out infinite',
+        }}
         aria-hidden="true"
       />
 
       <nav
-        className="container flex h-[60px] items-center justify-between"
+        className="container flex h-[62px] items-center justify-between"
         aria-label="Main navigation"
       >
         {/* Logo */}
@@ -79,17 +84,20 @@ export function Navbar() {
           className="group flex items-center gap-3 flex-shrink-0"
           aria-label="Professor Mohammed Dauda — home"
         >
-          <span
-            className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gold-300 to-gold-500 text-navy-800 font-serif font-bold text-sm select-none shadow-gold group-hover:shadow-gold-lg transition-all duration-300"
-            aria-hidden="true"
-          >
-            MD
-          </span>
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full bg-gold-400/20 blur-md group-hover:bg-gold-400/35 transition-all duration-500" aria-hidden="true" />
+            <span
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 text-navy-900 font-serif font-bold text-sm select-none shadow-gold group-hover:shadow-gold-lg transition-all duration-300"
+              aria-hidden="true"
+            >
+              MD
+            </span>
+          </div>
           <span className="hidden sm:block leading-none">
-            <span className="block text-[13.5px] font-serif font-bold text-white tracking-tight">
+            <span className="block text-[13.5px] font-serif font-bold text-white tracking-tight group-hover:text-gold-200 transition-colors duration-300">
               Prof. Mohammed Dauda
             </span>
-            <span className="block text-[9.5px] tracking-[0.2em] text-gold-400/75 uppercase mt-[3px]">
+            <span className="block text-[9.5px] tracking-[0.22em] text-gold-400/70 uppercase mt-[3px]">
               FNSE · FNIMechE · MASME
             </span>
           </span>
@@ -102,17 +110,19 @@ export function Navbar() {
               <Link
                 href={link.href}
                 className={cn(
-                  'relative px-3 py-2 text-[12.5px] font-medium tracking-wide transition-colors duration-200',
+                  'relative px-3 py-2 text-[12.5px] font-medium tracking-wide transition-all duration-200',
                   isActive(link.href)
                     ? 'text-gold-400'
-                    : 'text-white/70 hover:text-white'
+                    : 'text-white/65 hover:text-white'
                 )}
               >
                 {link.label}
                 {isActive(link.href) && (
-                  <span
+                  <motion.span
+                    layoutId="nav-active-pill"
                     className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-gold-400 to-gold-300 rounded-full"
                     aria-hidden="true"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
                   />
                 )}
               </Link>
@@ -127,74 +137,107 @@ export function Navbar() {
               aria-haspopup="true"
               className={cn(
                 'flex items-center gap-1 px-3 py-2 text-[12.5px] font-medium tracking-wide transition-colors duration-200',
-                MORE.some(l => isActive(l.href)) ? 'text-gold-400' : 'text-white/70 hover:text-white'
+                MORE.some(l => isActive(l.href)) ? 'text-gold-400' : 'text-white/65 hover:text-white'
               )}
             >
               More
-              <ChevronDown className={cn('h-3 w-3 transition-transform duration-200', moreOpen && 'rotate-180')} />
+              <motion.span animate={{ rotate: moreOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                <ChevronDown className="h-3 w-3" />
+              </motion.span>
             </button>
-            {moreOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white shadow-modal border border-ivory-200 py-1.5 z-50 overflow-hidden">
-                {MORE.map(link => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    role="menuitem"
-                    onClick={() => setMoreOpen(false)}
-                    className={cn(
-                      'block px-4 py-2.5 text-sm transition-colors',
-                      isActive(link.href)
-                        ? 'text-navy-800 font-semibold bg-gold-50'
-                        : 'text-charcoal hover:bg-ivory-100 hover:text-navy-800'
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {moreOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  className="absolute right-0 top-full mt-2 w-52 rounded-2xl bg-white shadow-modal border border-ivory-200 py-2 z-50 overflow-hidden"
+                >
+                  {/* Gradient top */}
+                  <div className="h-[2px] mx-3 mb-1.5 rounded-full bg-gradient-to-r from-gold-300 to-gold-500" aria-hidden="true" />
+                  {MORE.map(link => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      role="menuitem"
+                      onClick={() => setMoreOpen(false)}
+                      className={cn(
+                        'flex items-center justify-between px-4 py-2.5 text-sm transition-all duration-150',
+                        isActive(link.href)
+                          ? 'text-navy-800 font-semibold bg-gold-50'
+                          : 'text-charcoal hover:bg-ivory-50 hover:text-navy-800'
+                      )}
+                    >
+                      {link.label}
+                      {isActive(link.href) && <Zap className="h-3 w-3 text-gold-500" aria-hidden="true" />}
+                    </Link>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </li>
         </ul>
 
         {/* Mobile button */}
         <button
-          className="lg:hidden flex items-center justify-center h-9 w-9 rounded-lg text-white hover:bg-white/10 transition-colors"
+          className="lg:hidden flex items-center justify-center h-9 w-9 rounded-xl text-white hover:bg-white/10 transition-all border border-white/10 hover:border-white/20"
           onClick={() => setMobileOpen(v => !v)}
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
         >
-          {mobileOpen
-            ? <X className="h-5 w-5" aria-hidden="true" />
-            : <Menu className="h-5 w-5" aria-hidden="true" />}
+          <AnimatePresence mode="wait">
+            {mobileOpen ? (
+              <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                <X className="h-5 w-5" aria-hidden="true" />
+              </motion.div>
+            ) : (
+              <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                <Menu className="h-5 w-5" aria-hidden="true" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </button>
       </nav>
 
       {/* Mobile drawer */}
-      {mobileOpen && (
-        <div
-          className="lg:hidden bg-navy-900 border-t border-white/8 pb-4"
-          role="navigation"
-          aria-label="Mobile navigation"
-        >
-          <ul className="container flex flex-col gap-0.5 pt-3" role="list">
-            {NAV_LINKS.map(link => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={cn(
-                    'block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors',
-                    isActive(link.href)
-                      ? 'bg-gold-400/15 text-gold-400 border-l-2 border-gold-400 pl-4'
-                      : 'text-white/70 hover:bg-white/8 hover:text-white'
-                  )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="lg:hidden overflow-hidden bg-navy-900/98 backdrop-blur-xl border-t border-white/[0.06]"
+            role="navigation"
+            aria-label="Mobile navigation"
+          >
+            <ul className="container flex flex-col gap-0 py-4 pb-6" role="list">
+              {NAV_LINKS.map((link, i) => (
+                <motion.li
+                  key={link.href}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.3 }}
                 >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium transition-all duration-200',
+                      isActive(link.href)
+                        ? 'text-gold-400 bg-gold-400/10 border border-gold-400/20'
+                        : 'text-white/65 hover:text-white hover:bg-white/[0.06]'
+                    )}
+                  >
+                    {isActive(link.href) && <span className="h-1.5 w-1.5 rounded-full bg-gold-400 flex-shrink-0" aria-hidden="true" />}
+                    {link.label}
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

@@ -115,60 +115,6 @@ cp .env.example .env.local
 
 > **Security note:** All `NEXT_PUBLIC_*` variables are bundled into browser code. This is intentional — Firebase Web SDK keys are not secrets. Actual data security is enforced by Firestore Security Rules and Firebase Storage Rules.
 
----
-
-## 5. Firebase Setup
-
-### 5.1 Create a Firebase project
-
-1. Go to [console.firebase.google.com](https://console.firebase.google.com).
-2. Create a new project (or use an existing one).
-3. Register a **Web app** → copy the `firebaseConfig` values into `.env.local`.
-
-### 5.2 Enable Authentication
-
-1. Firebase Console → **Authentication** → **Sign-in method**.
-2. Enable **Email/Password**.
-3. Create the first admin account: **Authentication** → **Users** → **Add user**.
-4. Copy the UID shown — you will need it for the initial admin setup.
-
-### 5.3 Create a Firestore database
-
-1. Firebase Console → **Firestore Database** → **Create database**.
-2. Choose **Production mode** (rules are deployed separately).
-3. Select a region close to your users.
-
-### 5.4 Enable Storage
-
-1. Firebase Console → **Storage** → **Get started**.
-2. Choose **Production mode**.
-3. Select the same region as Firestore.
-
-### 5.5 Deploy Security Rules
-
-```bash
-# Install Firebase CLI if not already installed
-npm install -g firebase-tools
-
-# Log in
-firebase login
-
-# Initialise (if first time — select Firestore and Storage)
-firebase init
-
-# Deploy Firestore rules
-firebase deploy --only firestore:rules
-
-# Deploy Storage rules
-firebase deploy --only storage
-
-# Deploy Firestore indexes
-firebase deploy --only firestore:indexes
-```
-
----
-
-## 6. Firestore Data Architecture
 
 ### Collection overview
 

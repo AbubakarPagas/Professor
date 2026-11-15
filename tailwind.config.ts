@@ -136,6 +136,26 @@ const config: Config = {
           from: { backgroundPosition: '-200% center' },
           to: { backgroundPosition: '200% center' },
         },
+        'slide-up': {
+          from: { opacity: '0', transform: 'translateY(40px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'slide-in-left': {
+          from: { opacity: '0', transform: 'translateX(-40px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.9)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(197,161,90,0.2)' },
+          '50%':       { boxShadow: '0 0 40px rgba(197,161,90,0.5)' },
+        },
+        'ticker': {
+          from: { transform: 'translateX(0)' },
+          to:   { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -143,6 +163,11 @@ const config: Config = {
         'fade-up': 'fade-up 0.6s ease-out forwards',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'shimmer': 'shimmer 3s ease-in-out infinite',
+        'slide-up': 'slide-up 0.7s cubic-bezier(0.22,1,0.36,1) forwards',
+        'slide-in-left': 'slide-in-left 0.7s cubic-bezier(0.22,1,0.36,1) forwards',
+        'scale-in': 'scale-in 0.6s cubic-bezier(0.22,1,0.36,1) forwards',
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+        'ticker': 'ticker 30s linear infinite',
       },
     },
   },

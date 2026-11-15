@@ -16,8 +16,11 @@ export default function ResearchPage() {
         title="Research & Expertise"
         description="Funded research programmes, innovation projects, and interdisciplinary scholarship spanning three decades of engineering science."
       />
-      <div className="container py-16">
-        <ResearchClient />
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #f8f6f0 0%, #f0ece3 50%, #ebe6da 100%)' }}>
+        <div className="absolute inset-0 pattern-crosshatch" aria-hidden="true" />
+        <div className="container py-16 relative">
+          <ResearchClient />
+        </div>
       </div>
     </>
   )

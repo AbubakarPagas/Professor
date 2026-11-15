@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { useFirestoreData } from '@/hooks/use-firestore'
 import { getGalleryAlbums } from '@/lib/firestore'
 import { formatDate } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/lib/motion'
 import type { GalleryCategory } from '@/types'
 
 const CAT_LABEL: Record<GalleryCategory, string> = {
@@ -36,7 +38,7 @@ export function GalleryPageClient() {
   if (loading) return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-56 rounded-lg bg-ivory-200 animate-pulse" />
+        <div key={i} className="h-60 rounded-2xl bg-ivory-200 animate-pulse" />
       ))}
     </div>
   )
@@ -59,7 +61,7 @@ export function GalleryPageClient() {
             variant={catFilter === f ? 'default' : 'outline'}
             onClick={() => setCatFilter(f)}
             aria-pressed={catFilter === f}
-            className="capitalize"
+            className="capitalize rounded-full"
           >
             {f === 'all' ? 'All Albums' : CAT_LABEL[f as GalleryCategory]}
           </Button>
@@ -69,32 +71,46 @@ export function GalleryPageClient() {
       {!filtered.length ? (
         <p className="py-10 text-center text-charcoal/50 text-sm">No albums in this category.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          key={catFilter}
+        >
           {filtered.map(album => (
-            <article key={album.id} className="card-base overflow-hidden group flex flex-col">
+            <motion.article
+              key={album.id}
+              variants={staggerItem}
+              className="card-base overflow-hidden group flex flex-col hover:border-gold-200 hover:-translate-y-0.5 hover:shadow-card-hover transition-all duration-300"
+            >
               <Link href={`/gallery/${album.slug}`} className="block flex-1 flex flex-col">
                 {/* Cover */}
-                <div className="relative h-52 bg-navy-50 flex-shrink-0 overflow-hidden">
+                <div className="relative h-56 bg-navy-50 flex-shrink-0 overflow-hidden">
                   {album.coverImageUrl ? (
-                    <Image
-                      src={album.coverImageUrl}
-                      alt={album.title}
-                      fill
-                      className="object-cover group-hover:scale-[1.03] transition-transform duration-300"
-                      sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
-                    />
+                    <>
+                      <Image
+                        src={album.coverImageUrl}
+                        alt={album.title}
+                        fill
+                        className="object-cover group-hover:scale-[1.05] transition-transform duration-500"
+                        sizes="(max-width:640px) 100vw, (max-width:1024px) 50vw, 33vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-navy-900/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true" />
+                    </>
                   ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <Images className="h-10 w-10 text-navy-200" aria-hidden="true" />
+                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-navy-100 to-navy-50">
+                      <Images className="h-10 w-10 text-navy-300" aria-hidden="true" />
                     </div>
                   )}
-                  {album.featured && (
-                    <div className="absolute top-3 left-3">
-                      <Badge variant="gold" className="text-[11px]">Featured</Badge>
-                    </div>
-                  )}
+                  <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+                    {album.featured && (
+                      <Badge variant="gold" className="text-[10px] shadow-sm">Featured</Badge>
+                    )}
+                  </div>
                   {album.imageCount > 0 && (
-                    <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                    <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                      <Images className="h-3 w-3" aria-hidden="true" />
                       {album.imageCount} photo{album.imageCount !== 1 ? 's' : ''}
                     </div>
                   )}
@@ -102,38 +118,38 @@ export function GalleryPageClient() {
 
                 {/* Info */}
                 <div className="p-5 flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge variant="secondary" className="text-[11px]">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <Badge variant="secondary" className="text-[10px]">
                       {CAT_LABEL[album.category]}
                     </Badge>
                     {album.eventDate && (
                       <span className="text-xs text-charcoal/40 flex items-center gap-1">
-                        <Calendar className="h-3 w-3" aria-hidden="true" />
+                        <Calendar className="h-3 w-3 text-gold-400" aria-hidden="true" />
                         {formatDate(album.eventDate)}
                       </span>
                     )}
                   </div>
-                  <h2 className="font-serif font-semibold text-navy-700 text-[15px] leading-snug mb-1 group-hover:text-gold-600 transition-colors">
+                  <h2 className="font-serif font-semibold text-navy-700 text-[15px] leading-snug mb-1.5 group-hover:text-gold-700 transition-colors">
                     {album.title}
                   </h2>
                   {album.venue && (
-                    <p className="text-xs text-charcoal/45 flex items-center gap-1 mb-2">
-                      <MapPin className="h-3 w-3" aria-hidden="true" /> {album.venue}
+                    <p className="text-xs text-charcoal/40 flex items-center gap-1 mb-2.5">
+                      <MapPin className="h-3 w-3 text-gold-400" aria-hidden="true" /> {album.venue}
                     </p>
                   )}
                   {album.description && (
-                    <p className="text-sm text-charcoal/60 leading-relaxed line-clamp-2 mb-3">
+                    <p className="text-sm text-charcoal/55 leading-relaxed line-clamp-2 mb-3">
                       {album.description}
                     </p>
                   )}
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-navy-700 group-hover:text-gold-500 transition-colors mt-auto">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-navy-700 group-hover:text-gold-600 transition-colors mt-auto">
                     View album <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
                 </div>
               </Link>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   )

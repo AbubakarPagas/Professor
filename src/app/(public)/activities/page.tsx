@@ -16,8 +16,11 @@ export default function ActivitiesPage() {
         title="Activities & Events"
         description="Conferences, workshops, lectures, awards ceremonies, and community engagements — a record of active participation in the engineering community."
       />
-      <div className="container py-16">
-        <ActivitiesClient />
+      <div className="relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #f8f6f0 0%, #f0ece3 50%, #ebe6da 100%)' }}>
+        <div className="absolute inset-0 pattern-crosshatch" aria-hidden="true" />
+        <div className="container py-16 relative">
+          <ActivitiesClient />
+        </div>
       </div>
     </>
   )
