@@ -67,8 +67,8 @@ professional development and entrepreneurship programmes across Africa.</p>`,
 
   fullBio: '', // populated same as bio above for full page
 
-  email:       'dauda@profdauda.com',
-  phone:       '+234 803 000 0000',
+  email:       'mdsmatt@gmail.com',
+  phone:       '+234 703 528 5530',
   institution: 'University of Maiduguri / NASENI',
   department:  'Department of Mechanical Engineering',
   address:     'University of Maiduguri, Borno State, Nigeria',
@@ -108,7 +108,7 @@ export const SEED_SETTINGS: Omit3<SiteSettings> = {
   twitterHandle:   '@ProfDauda',
   linkedIn:        'https://www.linkedin.com/in/prof-mohammed-dauda',
   contactEmail:    'dauda@profdauda.com',
-  contactPhone:    '+234 803 000 0000',
+  contactPhone:    '+234 703 528 5530',
   contactFormEnabled: true,
   maintenanceMode:    false,
 }

@@ -47,14 +47,14 @@ export default function PrivacyPolicyPage() {
             <h2>Third-Party Links</h2>
             <p>This website may contain links to external academic profiles (Google Scholar, ResearchGate, ORCID, LinkedIn). We are not responsible for the privacy practices of those platforms.</p>
 
-            <h2>Your Rights</h2>
-            <p>You may request deletion of any personal data you submitted via the contact form by emailing <a href="mailto:contact@mohammeddauda.com">contact@mohammeddauda.com</a>. Requests will be honoured within 30 days.</p>
+            <h2>Your Rights</h2>mdsmatt@gmail.com
+            <p>You may request deletion of any personal data you submitted via the contact form by emailing <a href="mailto:">mdsmatt@gmail.com</a>. Requests will be honoured within 30 days.</p>
 
             <h2>Changes to This Policy</h2>
             <p>This policy may be updated periodically. The &ldquo;last updated&rdquo; date at the top of this page will reflect any changes.</p>
 
             <h2>Contact</h2>
-            <p>For questions regarding this privacy policy, please contact us at <a href="mailto:contact@mohammeddauda.com">contact@mohammeddauda.com</a>.</p>
+            <p>For questions regarding this privacy policy, please contact us at <a href="mailto:mdsmatt@gmail.com">mdsmatt@gmail.com</a>.</p>
           </div>
         </div>
       </div>

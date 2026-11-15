@@ -10,8 +10,8 @@ const CONTACT_ITEMS = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'contact@mohammeddauda.com',
-    href: 'mailto:contact@mohammeddauda.com',
+    value: 'mdsmatt@gmail.com',
+    href: 'mailto:mdsmatt@gmail.com',
     color: 'text-sky-600',
     bg: 'bg-sky-50',
     border: 'border-sky-200',

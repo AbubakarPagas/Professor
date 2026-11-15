@@ -28,7 +28,7 @@ const FOOTER_NAV = {
 }
 
 export function Footer({ profile }: FooterProps) {
-  const email   = profile?.email ?? 'contact@mohammeddauda.com'
+  const email   = profile?.email ?? 'mdsmatt@gmail.com'
   const address = profile?.address ?? profile?.institution ?? 'Nigeria'
   const name    = profile?.name ?? 'Prof. Mohammed Dauda'
   const credentials = profile?.fellowships?.length ? profile.fellowships.slice(0, 3).join(' · ') : 'FNSE · FNIMechE · MASME'
