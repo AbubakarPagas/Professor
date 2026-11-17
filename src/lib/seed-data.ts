@@ -73,9 +73,9 @@ professional development and entrepreneurship programmes across Africa.</p>`,
   department:  'Department of Mechanical Engineering',
   address:     'University of Maiduguri, Borno State, Nigeria',
 
-  linkedIn:     'https://www.linkedin.com/in/prof-mohammed-dauda',
+  linkedIn:     'https://www.linkedin.com/in/mdsmatt',
   researchGate: 'https://www.researchgate.net/profile/Mohammed-Dauda',
-  googleScholar: 'https://scholar.google.com/citations?user=profdauda',
+  googleScholar: 'https://scholar.google.com/citations?user=yC5lXw4AAAAJ&hl',
   orcid:        '0000-0000-0000-0000',
 
   fellowships:       ['FNSE', 'FNIMechE', 'MASME'],
