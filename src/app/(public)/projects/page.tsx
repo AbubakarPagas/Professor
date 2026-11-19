@@ -19,29 +19,29 @@ const PROJECTS = [
     title: 'Advanced Manufacturing Technology Development Institute (AMTDI)',
     org: 'NASENI — National Agency for Science and Engineering Infrastructure',
     description:
-      'Established under the leadership of Professor Dauda as Director-General of NASENI, AMTDI is Nigeria\'s foremost institute for advanced manufacturing research and development. Its mandate is to develop indigenous manufacturing technologies, train engineers, and reduce Nigeria\'s dependence on imported industrial equipment.',
+      'Professor Dauda played a pioneering executive leadership role at AMTDI Jalingo under NASENI (2010–2019), contributing to engineering infrastructure development and agro-processing technology programmes. AMTDI\'s mandate covers indigenous manufacturing capacity, engineering training, and technology development for Nigerian industry.',
     outcomes: [
-      'Development of agro-processing machinery prototypes',
-      'Training programmes for hundreds of engineers',
-      'Technology transfer to Nigerian SMEs',
+      'Development of agro-processing machinery (rice threshers, fish dryers, multi-grain threshers)',
+      'Engineering infrastructure established at AMTDI Jalingo',
+      'Four patent-related records filed for agro-processing equipment (2016)',
     ],
   },
   {
     tag: 'Academic Centre',
-    status: 'Active',
+    status: 'Completed',
     icon: BookOpen,
     color: 'text-gold-600',
     bg: 'bg-gold-50',
     border: 'border-gold-200',
     glow: 'rgba(197,161,90,0.15)',
     title: 'Centre for Entrepreneurship and Enterprise Development (CEED)',
-    org: 'University of Nigeria',
+    org: 'University of Maiduguri',
     description:
-      'Founded by Professor Dauda to embed entrepreneurship into engineering education. CEED has equipped thousands of students with the skills to convert engineering knowledge into sustainable enterprises, contributing directly to job creation and economic diversification.',
+      'Professor Dauda served as Director of CEED from December 2020 to February 2025, overseeing entrepreneurship education, enterprise development programmes and skills initiatives. CEED embeds enterprise thinking into engineering education at the University of Maiduguri.',
     outcomes: [
-      'Hundreds of engineering graduate start-ups',
-      'Curriculum reform integrating enterprise skills',
-      'Industry-academia linkage programmes',
+      'Entrepreneurship curriculum and skills programmes delivered',
+      'Industry-academia linkage activities',
+      'Handover to ASR-ICiE directorship, February 2025',
     ],
   },
   {
@@ -53,13 +53,13 @@ const PROJECTS = [
     border: 'border-violet-200',
     glow: 'rgba(139,92,246,0.12)',
     title: 'Abdul Samad Rabiu International Centre for Innovation & Entrepreneurship (ASR-ICiE)',
-    org: 'ASR-ICiE',
+    org: 'University of Maiduguri',
     description:
-      'An international centre dedicated to engineering innovation, technology commercialisation, and entrepreneurship education. ASR-ICiE operates programmes that connect researchers with investors, incubate engineering start-ups, and provide mentorship to emerging entrepreneurs across Africa.',
+      'Since February 2025, Professor Dauda serves as Director of ASR-ICiE, advancing multidisciplinary innovation, prototyping, entrepreneurship, creative technologies and youth skills development. The centre translates university expertise into practical enterprise opportunities for young Nigerians and Africans.',
     outcomes: [
-      'Multiple innovation cohorts launched',
-      'International partnerships established',
-      'Engineer-entrepreneurs incubated',
+      'Multidisciplinary innovation and prototyping activities',
+      'Youth entrepreneurship and enterprise development programmes',
+      'University–industry collaboration and enterprise support',
     ],
   },
   {
@@ -70,14 +70,14 @@ const PROJECTS = [
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     glow: 'rgba(16,185,129,0.12)',
-    title: 'Timbuktoo UniPod — Young Africa Innovates',
-    org: 'UNDP / Timbuktoo Innovation Platform',
+    title: 'UNDP-Supported University Innovation Pod (UniPod)',
+    org: 'UNDP / University of Maiduguri',
     description:
-      'The UNDP Timbuktoo UniPod initiative, led by Professor Dauda in Nigeria, provides university-based innovation hubs (UniPods) that equip young engineers with tools, mentorship, and market access to develop solutions aligned with Africa\'s Sustainable Development Goals.',
+      'Professor Dauda serves as Coordinator of the UNDP-supported UniPod at the University of Maiduguri (2025–present). The UniPod provides young innovators with access to labs, mentorship and enterprise support to develop solutions aligned with sustainable development goals. A focal-person role preceded this formal coordinator appointment.',
     outcomes: [
-      'UniPod hubs operational at partner universities',
-      'Young innovators programme cohorts launched',
-      'SDG-aligned technology solutions developed',
+      'Innovation labs and enterprise support for young Nigerians and Africans',
+      'SDG-aligned technology development activities',
+      'University innovation ecosystem strengthening',
     ],
   },
   {
@@ -88,14 +88,32 @@ const PROJECTS = [
     bg: 'bg-amber-50',
     border: 'border-amber-200',
     glow: 'rgba(245,158,11,0.12)',
-    title: 'Science and Technology Education Post-Basic (STEP-B)',
-    org: 'Federal Government of Nigeria / World Bank',
+    title: 'TETFund Mobile STEM School',
+    org: 'University of Maiduguri / Tertiary Education Trust Fund (TETFund)',
     description:
-      'Professor Dauda served as a key project manager for STEP-B, a nationally significant programme to strengthen secondary and post-basic science, technology, and vocational education. The programme built laboratory infrastructure, trained teachers, and produced revised curricula.',
+      'Professor Dauda serves as principal investigator for the TETFund-funded Mobile STEM School, an outreach project bringing hands-on science, technology, engineering and mathematics experiences to out-of-school and underserved learners. The project is currently under implementation.',
     outcomes: [
-      'National curriculum reform completed',
-      'Laboratory infrastructure upgraded across schools',
-      'Thousands of STEM teachers trained',
+      'Funded project under implementation',
+      'Practical STEM outreach to underserved communities',
+      'Verify actual beneficiary figures from approved project records before publication',
+    ],
+  },
+  {
+    tag: 'Research Prototype',
+    status: 'Active',
+    icon: Lightbulb,
+    color: 'text-teal-600',
+    bg: 'bg-teal-50',
+    border: 'border-teal-200',
+    glow: 'rgba(20,184,166,0.12)',
+    title: 'MCRP Fish Dryer Research Prototype',
+    org: 'University of Maiduguri / MCRP',
+    description:
+      'A research prototype that compares indirect combustion heating fish drying against the traditional half-drum kiln. Features an insulated drying chamber, solar-powered forced-air circulation, and alternative fuel trials. This is a separate, later university research prototype — distinct from the NASENI AMT-P institutional patent-related fish dryer records (NG/P/2016/48, /98).',
+    outcomes: [
+      'Prototype built; preliminary comparative tests completed',
+      'Solar-powered forced-air circulation trialled',
+      'Further independent validation ongoing',
     ],
   },
 ]
@@ -109,9 +127,9 @@ export default function ProjectsPage() {
   return (
     <>
       <PageHero
-        label="Projects & Initiatives"
-        title="Projects, Initiatives & Programmes"
-        description="Flagship programmes and institutions established or led by Professor Dauda that are driving engineering innovation and entrepreneurship across Nigeria and Africa."
+        label="Innovation & Impact"
+        title="Flagship Projects & Programmes"
+        description="Institutional leadership, research prototypes and innovation programmes — connecting engineering research with practical impact."
       />
 
       <div className="relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #f8f6f0 0%, #f0ece3 50%, #ebe6da 100%)' }}>

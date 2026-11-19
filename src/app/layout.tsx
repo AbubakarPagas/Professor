@@ -19,14 +19,15 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Professor Mohammed Dauda | FNSE, FNIMechE, MASME',
+    default: 'Professor Mohammed Dauda | FNSE, FNIMechE',
     template: '%s | Prof. Mohammed Dauda',
   },
   description:
-    'Official website of Professor Mohammed Dauda — distinguished mechanical engineer, academic leader, researcher, and innovator dedicated to engineering excellence and entrepreneurship development in Nigeria.',
+    'Official website of Professor Mohammed Dauda, FNSE, FNIMechE — Professor of Mechanical Engineering (Materials) at the University of Maiduguri, Director of ASR-ICiE, and Coordinator of the UNDP-supported UniPod.',
   keywords: [
-    'Professor Mohammed Dauda', 'mechanical engineering', 'FNSE', 'FNIMechE', 'MASME',
-    'NASENI', 'AMTDI', 'CEED', 'University of Maiduguri', 'engineering Nigeria',
+    'Professor Mohammed Dauda', 'mechanical engineering', 'FNSE', 'FNIMechE',
+    'ASR-ICiE', 'UniPod', 'UNDP', 'NASENI', 'AMTDI', 'CEED',
+    'University of Maiduguri', 'engineering Nigeria',
     'manufacturing technology', 'entrepreneurship', 'green composites',
   ],
   authors: [{ name: 'Professor Mohammed Dauda' }],
@@ -36,15 +37,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_SITE_URL,
     siteName: 'Professor Mohammed Dauda',
-    title: 'Professor Mohammed Dauda | FNSE, FNIMechE, MASME',
+    title: 'Professor Mohammed Dauda | FNSE, FNIMechE',
     description:
-      'Distinguished mechanical engineer, academic leader, researcher, and innovator.',
+      'Professor of Mechanical Engineering (Materials) at the University of Maiduguri — researcher, innovation leader and mentor.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Professor Mohammed Dauda | FNSE, FNIMechE, MASME',
+    title: 'Professor Mohammed Dauda | FNSE, FNIMechE',
     description:
-      'Distinguished mechanical engineer, academic leader, researcher, and innovator.',
+      'Professor of Mechanical Engineering (Materials) at the University of Maiduguri — researcher, innovation leader and mentor.',
   },
   robots: { index: true, follow: true },
 }

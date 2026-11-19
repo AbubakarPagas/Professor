@@ -7,30 +7,57 @@ import { Menu, X, ChevronDown, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const NAV_LINKS = [
-  { label: 'About',        href: '/about' },
-  { label: 'Biography',    href: '/biography' },
-  { label: 'Research',     href: '/research' },
-  { label: 'Publications', href: '/publications' },
-  { label: 'Patents',      href: '/patents' },
-  { label: 'Projects',     href: '/projects' },
-  { label: 'Activities',   href: '/activities' },
-  { label: 'Gallery',      href: '/gallery' },
-  { label: 'News',         href: '/news' },
-  { label: 'Awards',       href: '/awards' },
-  { label: 'Mentorship',   href: '/mentorship' },
-  { label: 'Contact',      href: '/contact' },
+type NavItem =
+  | { label: string; href: string; children?: undefined }
+  | { label: string; href?: undefined; children: { label: string; href: string }[] }
+
+const NAV_ITEMS: NavItem[] = [
+  { label: 'Home',    href: '/' },
+  { label: 'About',   href: '/about' },
+  {
+    label: 'Research',
+    children: [
+      { label: 'Research',      href: '/research' },
+      { label: 'Publications',  href: '/publications' },
+      { label: 'Patents',       href: '/patents' },
+      { label: 'Projects',      href: '/projects' },
+    ],
+  },
+  {
+    label: 'Innovation & Impact',
+    children: [
+      { label: 'Activities',   href: '/activities' },
+      { label: 'Awards',       href: '/awards' },
+      { label: 'Gallery',      href: '/gallery' },
+    ],
+  },
+  {
+    label: 'Leadership',
+    children: [
+      { label: 'Biography',    href: '/biography' },
+      { label: 'Mentorship',   href: '/mentorship' },
+    ],
+  },
+  {
+    label: 'Insights',
+    children: [
+      { label: 'News',         href: '/news' },
+    ],
+  },
+  { label: 'Contact', href: '/contact' },
 ]
 
-const PRIMARY = NAV_LINKS.slice(0, 7)
-const MORE    = NAV_LINKS.slice(7)
+// Flat list of all leaf hrefs — used for mobile and active-detection
+const ALL_LINKS = NAV_ITEMS.flatMap(item =>
+  item.children ? item.children : [{ label: item.label, href: item.href! }]
+)
 
 export function Navbar() {
   const [scrolled, setScrolled]     = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [moreOpen, setMoreOpen]     = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const pathname  = usePathname()
-  const moreRef   = useRef<HTMLLIElement>(null)
+  const navRef    = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20)
@@ -38,12 +65,12 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
-  useEffect(() => { setMobileOpen(false); setMoreOpen(false) }, [pathname])
+  useEffect(() => { setMobileOpen(false); setOpenDropdown(null) }, [pathname])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false)
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -51,7 +78,12 @@ export function Navbar() {
   }, [])
 
   const isActive = (href: string) =>
-    pathname === href || (href !== '/' && pathname.startsWith(href))
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href)
+
+  const isGroupActive = (item: NavItem) => {
+    if (item.href) return isActive(item.href)
+    return item.children?.some(c => isActive(c.href)) ?? false
+  }
 
   return (
     <header
@@ -98,85 +130,89 @@ export function Navbar() {
               Prof. Mohammed Dauda
             </span>
             <span className="block text-[9.5px] tracking-[0.22em] text-gold-400/70 uppercase mt-[3px]">
-              FNSE · FNIMechE · MASME
+              FNSE · FNIMechE
             </span>
           </span>
         </Link>
 
         {/* Desktop links */}
-        <ul className="hidden lg:flex items-center" role="list">
-          {PRIMARY.map(link => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className={cn(
-                  'relative px-3 py-2 text-[12.5px] font-medium tracking-wide transition-all duration-200',
-                  isActive(link.href)
-                    ? 'text-gold-400'
-                    : 'text-white/65 hover:text-white'
-                )}
-              >
-                {link.label}
-                {isActive(link.href) && (
-                  <motion.span
-                    layoutId="nav-active-pill"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-gold-400 to-gold-300 rounded-full"
-                    aria-hidden="true"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                  />
-                )}
-              </Link>
-            </li>
-          ))}
+        <ul className="hidden lg:flex items-center" role="list" ref={navRef}>
+          {NAV_ITEMS.map(item => {
+            const active = isGroupActive(item)
+            if (!item.children) {
+              return (
+                <li key={item.label}>
+                  <Link
+                    href={item.href!}
+                    className={cn(
+                      'relative px-3 py-2 text-[12.5px] font-medium tracking-wide transition-all duration-200',
+                      active ? 'text-gold-400' : 'text-white/65 hover:text-white'
+                    )}
+                  >
+                    {item.label}
+                    {active && (
+                      <motion.span
+                        layoutId="nav-active-pill"
+                        className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-gold-400 to-gold-300 rounded-full"
+                        aria-hidden="true"
+                        transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                      />
+                    )}
+                  </Link>
+                </li>
+              )
+            }
 
-          {/* More dropdown */}
-          <li className="relative" ref={moreRef}>
-            <button
-              onClick={() => setMoreOpen(v => !v)}
-              aria-expanded={moreOpen}
-              aria-haspopup="true"
-              className={cn(
-                'flex items-center gap-1 px-3 py-2 text-[12.5px] font-medium tracking-wide transition-colors duration-200',
-                MORE.some(l => isActive(l.href)) ? 'text-gold-400' : 'text-white/65 hover:text-white'
-              )}
-            >
-              More
-              <motion.span animate={{ rotate: moreOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                <ChevronDown className="h-3 w-3" />
-              </motion.span>
-            </button>
-            <AnimatePresence>
-              {moreOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                  transition={{ duration: 0.18, ease: 'easeOut' }}
-                  className="absolute right-0 top-full mt-2 w-52 rounded-2xl bg-white shadow-modal border border-ivory-200 py-2 z-50 overflow-hidden"
+            const isOpen = openDropdown === item.label
+            return (
+              <li key={item.label} className="relative">
+                <button
+                  onClick={() => setOpenDropdown(isOpen ? null : item.label)}
+                  aria-expanded={isOpen}
+                  aria-haspopup="true"
+                  className={cn(
+                    'flex items-center gap-1 px-3 py-2 text-[12.5px] font-medium tracking-wide transition-colors duration-200',
+                    active ? 'text-gold-400' : 'text-white/65 hover:text-white'
+                  )}
                 >
-                  {/* Gradient top */}
-                  <div className="h-[2px] mx-3 mb-1.5 rounded-full bg-gradient-to-r from-gold-300 to-gold-500" aria-hidden="true" />
-                  {MORE.map(link => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      role="menuitem"
-                      onClick={() => setMoreOpen(false)}
-                      className={cn(
-                        'flex items-center justify-between px-4 py-2.5 text-sm transition-all duration-150',
-                        isActive(link.href)
-                          ? 'text-navy-800 font-semibold bg-gold-50'
-                          : 'text-charcoal hover:bg-ivory-50 hover:text-navy-800'
-                      )}
+                  {item.label}
+                  <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="h-3 w-3" />
+                  </motion.span>
+                </button>
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      className="absolute left-0 top-full mt-2 w-52 rounded-2xl bg-white shadow-modal border border-ivory-200 py-2 z-50 overflow-hidden"
                     >
-                      {link.label}
-                      {isActive(link.href) && <Zap className="h-3 w-3 text-gold-500" aria-hidden="true" />}
-                    </Link>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </li>
+                      <div className="h-[2px] mx-3 mb-1.5 rounded-full bg-gradient-to-r from-gold-300 to-gold-500" aria-hidden="true" />
+                      {item.children.map(child => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          role="menuitem"
+                          onClick={() => setOpenDropdown(null)}
+                          className={cn(
+                            'flex items-center justify-between px-4 py-2.5 text-sm transition-all duration-150',
+                            isActive(child.href)
+                              ? 'text-navy-800 font-semibold bg-gold-50'
+                              : 'text-charcoal hover:bg-ivory-50 hover:text-navy-800'
+                          )}
+                        >
+                          {child.label}
+                          {isActive(child.href) && <Zap className="h-3 w-3 text-gold-500" aria-hidden="true" />}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </li>
+            )
+          })}
         </ul>
 
         {/* Mobile button */}
@@ -213,7 +249,7 @@ export function Navbar() {
             aria-label="Mobile navigation"
           >
             <ul className="container flex flex-col gap-0 py-4 pb-6" role="list">
-              {NAV_LINKS.map((link, i) => (
+              {ALL_LINKS.map((link, i) => (
                 <motion.li
                   key={link.href}
                   initial={{ opacity: 0, x: -16 }}

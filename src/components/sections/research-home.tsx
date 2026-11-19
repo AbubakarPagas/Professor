@@ -39,10 +39,10 @@ export function ResearchHomeSection({ projects }: ResearchHomeSectionProps) {
           transition={{ duration: 0.6 }}
         >
           <span className="section-label justify-center">Research &amp; Expertise</span>
-          <h2 id="research-home-heading" className="section-title mt-1 mb-3">Featured Research Areas</h2>
+          <h2 id="research-home-heading" className="section-title mt-1 mb-3">Research Areas</h2>
           <div className="gold-rule mx-auto mb-5" aria-hidden="true" />
           <p className="text-charcoal/50 max-w-xl mx-auto text-sm leading-relaxed">
-            Interdisciplinary research advancing engineering science, manufacturing technology, and national development
+            Engineering materials, manufacturing technologies and practical innovation — connecting academic scholarship with real-world impact
           </p>
         </motion.div>
 

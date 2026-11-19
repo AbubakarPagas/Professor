@@ -15,18 +15,22 @@ interface AboutHomeSectionProps {
 export function AboutHomeSection({ profile, expertise }: AboutHomeSectionProps) {
   const name = profile?.name ?? 'Professor Mohammed Dauda'
   const bio  = profile?.bio ?? profile?.shortBio ?? ''
-  const fellowships  = profile?.fellowships?.length ? profile.fellowships : ['FNSE', 'FNIMechE', 'MASME']
+  const fellowships  = profile?.fellowships?.length ? profile.fellowships : ['FNSE', 'FNIMechE']
   const expertiseList = expertise.length
     ? expertise.filter(e => e.active).map(e => e.title)
     : profile?.areasOfExpertise?.length
       ? profile.areasOfExpertise
-      : ['Advanced Manufacturing Technology', 'Thermofluids & Energy Systems', 'Engineering Entrepreneurship', 'Green Composite Materials', 'Renewable Energy Systems', 'Technology Policy & Innovation']
+      : ['Green Composite & Natural-Fibre Materials', 'Advanced Manufacturing Technology', 'Agro-processing Machinery', 'Renewable Energy & Solar Systems', 'Engineering Entrepreneurship & Innovation', 'Engineering Education']
 
   const highlights = [
-    profile?.title ? { icon: GraduationCap, text: profile.title } : { icon: GraduationCap, text: 'Professor of Mechanical Engineering since 2012' },
-    profile?.institution ? { icon: Building2, text: profile.institution } : { icon: Building2, text: 'Director-General, NASENI' },
-    { icon: Globe, text: 'UNDP Timbuktoo UniPod Lead, Africa' },
-    { icon: Zap,   text: 'ASR-ICiE Innovation Centre Director' },
+    profile?.title
+      ? { icon: GraduationCap, text: profile.title }
+      : { icon: GraduationCap, text: 'Professor of Mechanical Engineering (Materials)' },
+    profile?.institution
+      ? { icon: Building2, text: profile.institution }
+      : { icon: Building2, text: 'University of Maiduguri, Nigeria' },
+    { icon: Globe, text: 'Director, ASR-ICiE (2025–present)' },
+    { icon: Zap,   text: 'Coordinator, UNDP UniPod' },
   ]
 
   return (
@@ -48,7 +52,7 @@ export function AboutHomeSection({ profile, expertise }: AboutHomeSectionProps) 
             viewport={VIEWPORT}
           >
             <span className="section-label">About the Professor</span>
-            <h2 id="about-home-heading" className="section-title mt-1 mb-3">A Career at the Frontier of Engineering &amp; Innovation</h2>
+            <h2 id="about-home-heading" className="section-title mt-1 mb-3">Research, Innovation &amp; Institutional Leadership</h2>
             <div className="gold-rule mb-8" aria-hidden="true" />
 
             {bio ? (
@@ -59,10 +63,10 @@ export function AboutHomeSection({ profile, expertise }: AboutHomeSectionProps) 
             ) : (
               <>
                 <p className="text-charcoal/75 leading-[1.9] mb-5 text-[15.5px]">
-                  {name}, FNSE, FNIMechE, MASME is a distinguished mechanical engineer and academic leader whose career bridges research breakthroughs, national infrastructure development, and the cultivation of an entire generation of engineering entrepreneurs.
+                  {name}, FNSE, FNIMechE, is a Professor of Mechanical Engineering (Materials) at the University of Maiduguri, researcher and institutional leader whose career spans university teaching, engineering materials research, advanced manufacturing, technological innovation and entrepreneurship development.
                 </p>
                 <p className="text-charcoal/75 leading-[1.9] mb-8 text-[15.5px]">
-                  As Director-General at NASENI, he founded AMTDI — Nigeria&apos;s foremost advanced manufacturing institute — and as Director of ASR-ICiE, he is driving Africa&apos;s next wave of tech-driven entrepreneurship.
+                  He currently serves as Director of the Abdul Samad Rabiu International Centre for Innovation and Entrepreneurship (ASR-ICiE) and Coordinator of the UNDP-supported University Innovation Pod (UniPod), enabling multidisciplinary innovation and enterprise opportunities for young Nigerians and Africans.
                 </p>
               </>
             )}

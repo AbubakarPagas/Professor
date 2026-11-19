@@ -5,7 +5,7 @@ import { FooterWrapper } from '@/components/layout/footer-wrapper'
 export const metadata: Metadata = {
   title: 'Home',
   description:
-    'Official website of Professor Mohammed Dauda, FNSE, FNIMechE, MASME — distinguished mechanical engineer, academic leader, researcher, and innovator.',
+    'Official website of Professor Mohammed Dauda, FNSE, FNIMechE — Professor of Mechanical Engineering (Materials) at the University of Maiduguri, researcher and innovation leader.',
 }
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {

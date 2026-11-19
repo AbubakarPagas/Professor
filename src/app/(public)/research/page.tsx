@@ -3,9 +3,9 @@ import { PageHero } from '@/components/layout/page-hero'
 import { ResearchClient } from './research-client'
 
 export const metadata: Metadata = {
-  title: 'Research & Expertise',
+  title: 'Research & Scholarly Interests',
   description:
-    'Research projects, expertise areas, and scholarly contributions of Professor Mohammed Dauda in mechanical engineering, manufacturing, and entrepreneurship.',
+    'Research interests, publications, patents and projects of Professor Mohammed Dauda — covering natural-fibre composites, advanced manufacturing, agro-processing, renewable energy, and engineering education.',
 }
 
 export default function ResearchPage() {
@@ -13,8 +13,8 @@ export default function ResearchPage() {
     <>
       <PageHero
         label="Research"
-        title="Research & Expertise"
-        description="Funded research programmes, innovation projects, and interdisciplinary scholarship spanning three decades of engineering science."
+        title="Research & Scholarly Interests"
+        description="Engineering materials, manufacturing technologies and practical innovation — connecting academic scholarship with real-world impact."
       />
       <div className="relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #f8f6f0 0%, #f0ece3 50%, #ebe6da 100%)' }}>
         <div className="absolute inset-0 pattern-crosshatch" aria-hidden="true" />

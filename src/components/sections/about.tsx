@@ -4,31 +4,31 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
 const expertise = [
-  'Mechanical Engineering Design',
-  'Thermofluids & Energy Systems',
-  'Manufacturing Technology',
+  'Green Composite & Natural-Fibre Materials',
+  'Advanced Manufacturing Technology',
+  'Agro-processing Machinery',
+  'Renewable Energy & Solar Systems',
   'Engineering Entrepreneurship',
-  'Research & Innovation Policy',
-  'Renewable Energy Systems',
+  'Waste Recovery & Circular Economy',
+  'Digital Systems & Mechatronics',
   'Engineering Education',
-  'Industrial Automation',
 ]
 
 const highlights = [
   {
     icon: Building2,
     title: 'Academic Leadership',
-    desc: 'Held senior leadership positions in leading Nigerian universities, shaping engineering education.',
+    desc: 'Professor of Mechanical Engineering at the University of Maiduguri; Director of ASR-ICiE and Coordinator of the UNDP-supported UniPod.',
   },
   {
     icon: FlaskConical,
-    title: 'Research Excellence',
-    desc: 'Principal investigator on numerous funded research projects with national and international impact.',
+    title: 'Research & Scholarship',
+    desc: 'Over 44 scholarly publications and 5 patent-related records across natural-fibre composites, manufacturing and agro-processing technologies.',
   },
   {
     icon: Users,
     title: 'Mentorship & Impact',
-    desc: 'Supervised 50+ postgraduate students, fostering the next generation of Nigerian engineers.',
+    desc: 'Postgraduate supervisor, entrepreneurship educator, and mentor to engineers through ASR-ICiE, UniPod and national professional networks.',
   },
 ]
 
@@ -43,7 +43,7 @@ export function AboutSection() {
             id="about-heading"
             className="text-3xl sm:text-4xl font-bold font-serif text-navy-700 mb-4"
           >
-            A Life Devoted to Engineering Excellence
+            Research, Innovation &amp; Institutional Leadership
           </h2>
           <div className="h-1 w-16 gradient-gold rounded-full mx-auto" aria-hidden="true" />
         </div>
@@ -52,20 +52,22 @@ export function AboutSection() {
           {/* Biography text */}
           <div>
             <p className="text-lg text-muted-foreground leading-relaxed mb-6">
-              Professor Mohammed Dauda, FNSE, FNIMechE, MASME, is a distinguished mechanical
-              engineer and academic leader with over three decades of transformative contributions
-              to engineering education, research, and practice in Nigeria.
+              Professor Mohammed Dauda, FNSE, FNIMechE, is a Professor of Mechanical Engineering
+              (Materials) at the University of Maiduguri, researcher and institutional leader whose
+              career spans university teaching, engineering materials research, advanced
+              manufacturing, technological innovation and entrepreneurship development.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-6">
-              A Fellow of the Nigerian Society of Engineers (FNSE), Fellow of the Nigerian
-              Institution of Mechanical Engineers (FNIMechE), and Member of the American Society
-              of Mechanical Engineers (MASME), he has dedicated his career to advancing engineering
-              science and fostering innovation that addresses Nigeria&apos;s socio-economic challenges.
+              A Fellow of the Nigerian Society of Engineers (FNSE) and Fellow of the Nigerian
+              Institution of Mechanical Engineers (FNIMechE), he currently serves as Director of
+              the Abdul Samad Rabiu International Centre for Innovation and Entrepreneurship
+              (ASR-ICiE) and Coordinator of the UNDP-supported UniPod at the University of
+              Maiduguri.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-8">
-              His research spans thermofluids, manufacturing technology, renewable energy, and
-              engineering entrepreneurship, yielding over a hundred publications, fifteen patents,
-              and numerous technology transfers to industry.
+              His work connects academic knowledge with practical engineering solutions, industrial
+              development, enterprise creation and opportunities for young people. He received the
+              Order of the Rising Sun, Gold and Silver Rays from the Government of Japan in 2024.
             </p>
 
             <div className="flex gap-3">
@@ -86,7 +88,7 @@ export function AboutSection() {
             {/* Areas of expertise */}
             <div>
               <h3 className="font-serif font-semibold text-navy-700 text-lg mb-4">
-                Areas of Expertise
+                Research &amp; Scholarly Interests
               </h3>
               <ul
                 className="grid grid-cols-1 sm:grid-cols-2 gap-2"

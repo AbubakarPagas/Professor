@@ -31,7 +31,7 @@ export function Footer({ profile }: FooterProps) {
   const email   = profile?.email ?? 'mdsmatt@gmail.com'
   const address = profile?.address ?? profile?.institution ?? 'Nigeria'
   const name    = profile?.name ?? 'Prof. Mohammed Dauda'
-  const credentials = profile?.fellowships?.length ? profile.fellowships.slice(0, 3).join(' · ') : 'FNSE · FNIMechE · MASME'
+  const credentials = profile?.fellowships?.length ? profile.fellowships.slice(0, 2).join(' · ') : 'FNSE · FNIMechE'
 
   const profiles: { label: string; href: string }[] = [
     profile?.googleScholar ? { label: 'Google Scholar', href: profile.googleScholar } : null,
@@ -87,7 +87,7 @@ export function Footer({ profile }: FooterProps) {
             </div>
 
             <p className="text-sm text-white/45 leading-relaxed mb-6 max-w-xs">
-              Distinguished mechanical engineer, academic leader, and pioneer of engineering innovation in Nigeria and beyond.
+              Professor of Mechanical Engineering (Materials) at the University of Maiduguri — researcher, innovation leader and mentor.
             </p>
 
             <address className="not-italic space-y-3 text-sm text-white/45">
